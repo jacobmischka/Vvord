@@ -24,7 +24,7 @@ public class Vvord{
 	static JFrame frame;
 	static FileDialog browser;
 	static long startTime, endTime;
-	static String docxId;
+	static String docxId, branch1Id, branch2Id;
 
 	public static void main(String[] args){
 	startTime = System.nanoTime();
@@ -48,6 +48,7 @@ public class Vvord{
 	String[] arguments2 = {"-m", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", "revision-history.xml"};
 	merge3dm(arguments2);
 	
+	updateRevisionHistory("baseRevisionHistory.xml", base, branch1, branch2);
 	createDocx(base, branch1, branch2);
 	endTime = System.nanoTime();
 	System.out.println("Completion time: " + ((endTime-startTime)/1000000000.0) + " seconds.");
@@ -124,9 +125,11 @@ public class Vvord{
 			RevisionHistory branch1RevisionHistory = new RevisionHistory();
 			branch1RevisionHistory.readXML(branch1);
 			currentRevision.parents.add(branch1RevisionHistory.current);
+			branch1Id = branch1RevisionHistory.current;
 			RevisionHistory branch2RevisionHistory = new RevisionHistory();
 			branch2RevisionHistory.readXML(branch2);
 			currentRevision.parents.add(branch2RevisionHistory.current);
+			branch2Id = branch2RevisionHistory.current;
 			
 			revisionHistory.add(currentRevision);
 			revisionHistory.current = id;
@@ -244,7 +247,9 @@ public class Vvord{
 					System.out.println(entry);
 				}
 				else if(entry.getName().startsWith("history")){
+					zos.putNextEntry(entry);
 					is = docxFile.getInputStream(entry);
+					System.out.println(entry);
 				}
 				else{
 					zos.putNextEntry(entry);
@@ -264,6 +269,43 @@ public class Vvord{
 			//while((length = is.read(buffer)) >= 0){
 			//	zos.write(buffer, 0, length);
 			//}
+			while(branch1enu.hasMoreElements()){
+				ZipEntry entry = (ZipEntry)branch1enu.nextElement();
+				if(!entry.getName().startsWith("history")){
+					zos.setMethod(entry.getMethod());
+					is = branch1Docx.getInputStream(entry);
+					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName());
+					zos.putNextEntry(entry);
+					System.out.println(entry);
+					while((length = is.read(buffer)) >= 0){
+						zos.write(buffer, 0, length);
+					}	
+				}
+				else{
+					
+				}
+				is.close();				
+				zos.closeEntry();
+			}
+			
+			while(branch2enu.hasMoreElements()){
+				ZipEntry entry = (ZipEntry)branch2enu.nextElement();
+				if(!entry.getName().startsWith("history")){
+					zos.setMethod(entry.getMethod());
+					is = branch2Docx.getInputStream(entry);
+					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName());
+					zos.putNextEntry(entry);
+					System.out.println(entry);
+					while((length = is.read(buffer)) >= 0){
+						zos.write(buffer, 0, length);
+					}
+				}
+				else{
+					
+				}
+				is.close();
+				zos.closeEntry();
+			}
 			zos.closeEntry();
 			zos.close();
 		}
