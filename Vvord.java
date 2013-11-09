@@ -271,7 +271,10 @@ public class Vvord{
 			//}
 			while(branch1enu.hasMoreElements()){
 				ZipEntry entry = (ZipEntry)branch1enu.nextElement();
-				if(!entry.getName().startsWith("history")){
+				if(entry.getName().startsWith("history")){//TODO add branch history
+					
+				}
+				else{
 					zos.setMethod(entry.getMethod());
 					is = branch1Docx.getInputStream(entry);
 					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName());
@@ -281,16 +284,17 @@ public class Vvord{
 						zos.write(buffer, 0, length);
 					}	
 				}
-				else{
-					
-				}
+				
 				is.close();				
 				zos.closeEntry();
 			}
 			
 			while(branch2enu.hasMoreElements()){
 				ZipEntry entry = (ZipEntry)branch2enu.nextElement();
-				if(!entry.getName().startsWith("history")){
+				if(entry.getName().startsWith("history")){//TODO add branch history
+					
+				}
+				else{
 					zos.setMethod(entry.getMethod());
 					is = branch2Docx.getInputStream(entry);
 					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName());

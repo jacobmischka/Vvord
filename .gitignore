@@ -1,3 +1,7 @@
 libs
 *.class
 *.jar
+*.docx
+*.xml
+*.zip
+
