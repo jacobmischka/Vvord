@@ -19,7 +19,7 @@ import java.util.Calendar;
 import javax.xml.stream.XMLStreamException;
 
 public class Vvord{
-	//TODO: updateRevisionHistory, update Content_Type.xml, grab base from revision-history.xml, replace /s with File.separators, tons of error checking, documentation
+	//TODO: updateRevisionHistory, update Content_Types.xml, grab base from revision-history.xml maybe, debugging, error checking, documentation
 	
 	static JFrame frame;
 	static FileDialog browser;
@@ -34,14 +34,14 @@ public class Vvord{
 	String branch1 = getDocx("branch1");
 	String branch2 = getDocx("branch2");
 	
-	extractXml(base, "base.xml", "word/document.xml");
-	extractXml(base, "baseRevisionHistory.xml", "history/revision-history.xml");
+	extractXml(base, "base.xml", "word"+File.separator+"document.xml");
+	extractXml(base, "baseRevisionHistory.xml", "history"+File.separator+"revision-history.xml");
 	
-	extractXml(branch1, "branch1.xml", "word/document.xml");
-	extractXml(branch1, "branch1RevisionHistory.xml", "history/revision-history.xml");
+	extractXml(branch1, "branch1.xml", "word"+File.separator+"document.xml");
+	extractXml(branch1, "branch1RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
 	
-	extractXml(branch2, "branch2.xml", "word/document.xml");
-	extractXml(branch2, "branch2RevisionHistory.xml", "history/revision-history.xml");
+	extractXml(branch2, "branch2.xml", "word"+File.separator+"document.xml");
+	extractXml(branch2, "branch2RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
 	
 	String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
 	merge3dm(arguments);
@@ -60,7 +60,7 @@ public class Vvord{
 		
 		FileDialog browser = new FileDialog(frame, "Select the " + type + " .docx file");
 		browser.setFilenameFilter(new DocxFilter());
-		browser.show();
+		browser.setVisible(true);
 		
 		return (browser.getDirectory()+browser.getFile());
 		
@@ -105,7 +105,6 @@ public class Vvord{
 	}
 	
 	static void updateRevisionHistory(String revisionHistoryXml, String base, String branch1, String branch2){
-		//need to: change current, add revision, combine history of branches
 		//might need to manually combine histories
 		try{
 			InputStream is = new FileInputStream(revisionHistoryXml);
@@ -148,25 +147,6 @@ public class Vvord{
 		}
 	}
 	
-	static void createVersionDetails(){ //deprecated, can remove
-		try{
-			String computerName = InetAddress.getLocalHost().getHostName();
-			Calendar cal = Calendar.getInstance();
-			FileWriter writer = new FileWriter("version-details.xml");
-			writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?><version computername=\""+computerName+"\" timestamp=\""+cal.getTimeInMillis()+"\" />");
-		}
-		catch(UnknownHostException e){
-			e.printStackTrace();
-			System.exit(1);
-		}
-		catch(IOException e){
-			e.printStackTrace();
-			System.exit(1);
-		}
-		
-
-	}
-	
 	static void extractHistory(String docxName, String outputName, String historyName){
 		try{
 			ZipFile docx = new ZipFile(docxName);
@@ -183,7 +163,7 @@ public class Vvord{
 				is = docx.getInputStream(entry);
 				String name = entry.getName();
 				File file = new File(name);
-				if(name.endsWith("/"))
+				if(name.endsWith(File.separator))
 					file.mkdirs();
 				
 				File parent = file.getParentFile();
@@ -235,12 +215,12 @@ public class Vvord{
 				ZipEntry entry = (ZipEntry)enu.nextElement();
 				zos.setMethod(entry.getMethod());
 				
-				if(entry.getName().equals("word/document.xml")){
+				if(entry.getName().equals("word"+File.separator+"document.xml")){
 					zos.putNextEntry(new ZipEntry(entry.getName()));
 					is = new FileInputStream("document.xml"); 
 					System.out.println(entry);
 				}
-				else if(entry.getName().equals("history/revision-history.xml")){
+				else if(entry.getName().equals("history"+File.separator+"revision-history.xml")){
 					zos.putNextEntry(new ZipEntry(entry.getName()));
 					updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
 					is = new FileInputStream("revision-history.xml");
@@ -263,51 +243,34 @@ public class Vvord{
 				is.close();
 				zos.closeEntry();
 			}
-			// Deprecated, can remove
-			//zos.putNextEntry(new ZipEntry("revision-details.xml"));
-			//is = new FileInputStream("revision-details.xml");
-			//while((length = is.read(buffer)) >= 0){
-			//	zos.write(buffer, 0, length);
-			//}
+
 			while(branch1enu.hasMoreElements()){
 				ZipEntry entry = (ZipEntry)branch1enu.nextElement();
-				if(entry.getName().startsWith("history")){//TODO add branch history
-					
-				}
-				else{
-					zos.setMethod(entry.getMethod());
-					is = branch1Docx.getInputStream(entry);
-					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName());
-					zos.putNextEntry(entry);
-					System.out.println(entry);
-					while((length = is.read(buffer)) >= 0){
-						zos.write(buffer, 0, length);
-					}	
-				}
-				
+				zos.setMethod(entry.getMethod());
+				is = branch1Docx.getInputStream(entry);
+				if(!entry.getName().startsWith("history"))//TODO add branch history
+					entry = new ZipEntry("history"+File.separator+branch1Id+File.separator+entry.getName());
+				zos.putNextEntry(entry);
+				System.out.println(entry);
+				while((length = is.read(buffer)) >= 0){
+					zos.write(buffer, 0, length);
+				}					
 				is.close();				
 				zos.closeEntry();
 			}
 			
 			while(branch2enu.hasMoreElements()){
 				ZipEntry entry = (ZipEntry)branch2enu.nextElement();
-				if(entry.getName().startsWith("history")){//TODO add branch history
-					
-				}
-				else{
-					zos.setMethod(entry.getMethod());
-					is = branch2Docx.getInputStream(entry);
-					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName());
-					zos.putNextEntry(entry);
-					System.out.println(entry);
-					while((length = is.read(buffer)) >= 0){
-						zos.write(buffer, 0, length);
-					}
-				}
-				else{
-					
-				}
-				is.close();
+				zos.setMethod(entry.getMethod());
+				is = branch2Docx.getInputStream(entry);
+				if(!entry.getName().startsWith("history"))//TODO add branch history
+					entry = new ZipEntry("history"+File.separator+branch2Id+File.separator+entry.getName());
+				zos.putNextEntry(entry);
+				System.out.println(entry);
+				while((length = is.read(buffer)) >= 0){
+					zos.write(buffer, 0, length);
+				}					
+				is.close();				
 				zos.closeEntry();
 			}
 			zos.closeEntry();
