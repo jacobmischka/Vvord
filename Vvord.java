@@ -94,7 +94,7 @@ public class Vvord{
 		//String[] arguments2 = {"-m", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", "revision-history.xml"};
 		//merge3dm(arguments2);
 		
-		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory", "branch2RevisionHistory.xml");
+		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
 		createDocx(base, branch1, branch2, "merged.docx");
 		endTime = System.nanoTime();
 		System.out.println("Completion time: " + ((endTime-startTime)/1000000000.0) + " seconds.");
@@ -188,6 +188,8 @@ public class Vvord{
 			RevisionHistory baseRevisionHistory = new RevisionHistory();
 			baseRevisionHistory.readXML(base);
 			baseId = baseRevisionHistory.current;
+			baseRevisionHistory.writeXML("testBaseRevisionHistory.xml");
+			
 			for(int i = 0; i < baseRevisionHistory.revisions.size(); i++){
 				if(!revisionHistory.revisions.contains(baseRevisionHistory.revisions.get(i))){
 					revisionHistory.add(baseRevisionHistory.revisions.get(i));
@@ -328,36 +330,47 @@ public class Vvord{
 			while(enu.hasMoreElements()){
 				
 				ZipEntry entry = (ZipEntry)enu.nextElement();
-				zos.setMethod(entry.getMethod());
 				
-				if(entry.getName().equals("word"+File.separator+"document.xml")){
-					zos.putNextEntry(new ZipEntry(entry.getName()));
-					is = new FileInputStream("document.xml"); 
-					System.out.println(entry);
-				}
-				/*
-				else if(entry.getName().equals("history"+File.separator+"revision-history.xml")){
-					zos.putNextEntry(new ZipEntry(entry.getName()));
-					//updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
-					is = new FileInputStream("revision-history.xml");
-					System.out.println(entry);
-				} */
-				else if(entry.getName().startsWith("history")){
-					zos.putNextEntry(entry);
-					is = docxFile.getInputStream(entry);
-					System.out.println(entry);
-				}
-				else{
-					zos.putNextEntry(entry);
-					is = docxFile.getInputStream(entry);
-					System.out.println(entry);
-				}
+				if(!entry.getName().equals("history"+File.separator+"revision-history.xml")){
+				
+					
+					zos.setMethod(entry.getMethod());
+					
+					if(entry.getName().equals("word"+File.separator+"document.xml")){
+						zos.putNextEntry(new ZipEntry(entry.getName()));
+						is = new FileInputStream("document.xml"); 
+						System.out.println(entry);
+					}
+					
+					else if(entry.getName().startsWith("history")){
+						zos.putNextEntry(entry);
+						is = docxFile.getInputStream(entry);
+						System.out.println(entry);
+					}
+					else{
+						zos.putNextEntry(entry);
+						is = docxFile.getInputStream(entry);
+						System.out.println(entry);
+					}
 
-				while((length = is.read(buffer)) >= 0){
-					zos.write(buffer, 0, length);
+					while((length = is.read(buffer)) >= 0){
+						zos.write(buffer, 0, length);
+					}
+					is.close();
+					zos.closeEntry();
+					
+					if(!entry.getName().startsWith("history")){
+						zos.putNextEntry(new ZipEntry("history"+File.separator+baseId+File.separator+entry.getName()));
+						is = docxFile.getInputStream(entry);
+						System.out.println(entry);
+						
+						while((length = is.read(buffer)) >= 0){
+							zos.write(buffer, 0, length);
+						}
+						is.close();
+						zos.closeEntry();
+					}
 				}
-				is.close();
-				zos.closeEntry();
 			}
 
 			while(branch1enu.hasMoreElements()){

@@ -50,13 +50,14 @@ class RevisionHistory{
 					Iterator<Attribute> itr = startElement.getAttributes();
 					while(itr.hasNext()){
 						Attribute attribute = itr.next();
-						if(attribute.getName().equals("id"))
+						if(attribute.getName().toString().equals("id")){
 							revision.id = attribute.getValue();
-						else if(attribute.getName().equals("location"))
+						}
+						else if(attribute.getName().toString().equals("location"))
 							revision.location = attribute.getValue();
-						else if(attribute.getName().equals("author"))
+						else if(attribute.getName().toString().equals("author"))
 							revision.author = attribute.getValue();
-						else if(attribute.getName().equals("timestamp"))
+						else if(attribute.getName().toString().equals("timestamp"))
 							revision.timestamp = attribute.getValue();
 					}
 				}
@@ -64,7 +65,7 @@ class RevisionHistory{
 					Iterator<Attribute> itr = startElement.getAttributes();
 					while(itr.hasNext()){
 						Attribute attribute = itr.next();
-						if(attribute.getName().equals("current"))
+						if(attribute.getName().toString().equals("current"))
 							current = attribute.getValue();
 					}
 				}
@@ -72,7 +73,7 @@ class RevisionHistory{
 					Iterator<Attribute> itr = startElement.getAttributes();
 					while(itr.hasNext()){
 						Attribute attribute = itr.next();
-						if(attribute.getName().equals("id"))
+						if(attribute.getName().toString().equals("id"))
 							revision.parents.add(attribute.getValue());
 					}
 				}
@@ -128,6 +129,7 @@ class RevisionHistory{
 			eventWriter.add(eventFactory.createStartElement("", "", "comments"));
 			eventWriter.add(eventFactory.createCharacters(r.comments));
 			eventWriter.add(eventFactory.createEndElement("", "", "comments"));
+			eventWriter.add(eventFactory.createEndElement("", "", "revision"));
 			eventWriter.add(endln);
 		}
 		
