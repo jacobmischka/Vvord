@@ -27,79 +27,79 @@ public class Vvord{
 	static String docxId, baseId, branch1Id, branch2Id;
 
 	public static void main(String[] args){
-	startTime = System.nanoTime();
-	frame = new JFrame();
-	
-	String base = getDocx("base");
-	String branch1 = getDocx("branch1");
-	String branch2 = getDocx("branch2");
-	
-	try{
-		extractXml(base, "base.xml", "word"+File.separator+"document.xml");
-	}
-	catch(IOException e){
-		System.err.println("Error reading document.xml in file " + base);
-		e.printStackTrace();
-		System.exit(1);
-	}
-	try{
-		extractXml(base, "baseRevisionHistory.xml", "history"+File.separator+"revision-history.xml");
-	}
-	catch(IOException e){
-		System.out.println("No revision-history.xml found in file " + base);
-	}
-	catch(NullPointerException e){
-		System.out.println("No revision-history.xml found in file " + base);
-	}
-	
-	
-	try{
-		extractXml(branch1, "branch1.xml", "word"+File.separator+"document.xml");
-	}
-	catch(IOException e){
-		System.err.println("Error reading document.xml in file " + branch1);
-		e.printStackTrace();
-		System.exit(1);		
-	}
-	try{
-		extractXml(branch1, "branch1RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
-	}
-	catch(IOException e){
-		System.out.println("No revision-history.xml found in file " + branch1);
-	}
-	catch(NullPointerException e){
-		System.out.println("No revision-history.xml found in file " + branch1);
-	}
+		startTime = System.nanoTime();
+		frame = new JFrame();
 		
-	try{
-		extractXml(branch2, "branch2.xml", "word"+File.separator+"document.xml");
-	}
-	catch(IOException e){
-		System.err.println("Error reading document.xml in file " + branch2);
-		e.printStackTrace();
-		System.exit(1);		
-	}
-	try{
-		extractXml(branch2, "branch2RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
-	}
-	catch(IOException e){
-		System.out.println("No revision-history.xml found in file " + branch2);
-	}
-	catch(NullPointerException e){
-		System.out.println("No revision-history.xml found in file " + branch2);
-	}
-	
-	String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
-	merge3dm(arguments);
-	//String[] arguments2 = {"-m", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", "revision-history.xml"};
-	//merge3dm(arguments2);
-	
-	updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory", "branch2RevisionHistory.xml");
-	createDocx(base, branch1, branch2);
-	endTime = System.nanoTime();
-	System.out.println("Completion time: " + ((endTime-startTime)/1000000000.0) + " seconds.");
-	
-	System.exit(0);
+		String base = getDocx("base");
+		String branch1 = getDocx("branch1");
+		String branch2 = getDocx("branch2");
+		
+		try{
+			extractXml(base, "base.xml", "word"+File.separator+"document.xml");
+		}
+		catch(IOException e){
+			System.err.println("Error reading document.xml in file " + base);
+			e.printStackTrace();
+			System.exit(1);
+		}
+		try{
+			extractXml(base, "baseRevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+		}
+		catch(IOException e){
+			System.out.println("No revision-history.xml found in file " + base);
+		}
+		catch(NullPointerException e){
+			System.out.println("No revision-history.xml found in file " + base);
+		}
+		
+		
+		try{
+			extractXml(branch1, "branch1.xml", "word"+File.separator+"document.xml");
+		}
+		catch(IOException e){
+			System.err.println("Error reading document.xml in file " + branch1);
+			e.printStackTrace();
+			System.exit(1);		
+		}
+		try{
+			extractXml(branch1, "branch1RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+		}
+		catch(IOException e){
+			System.out.println("No revision-history.xml found in file " + branch1);
+		}
+		catch(NullPointerException e){
+			System.out.println("No revision-history.xml found in file " + branch1);
+		}
+			
+		try{
+			extractXml(branch2, "branch2.xml", "word"+File.separator+"document.xml");
+		}
+		catch(IOException e){
+			System.err.println("Error reading document.xml in file " + branch2);
+			e.printStackTrace();
+			System.exit(1);		
+		}
+		try{
+			extractXml(branch2, "branch2RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+		}
+		catch(IOException e){
+			System.out.println("No revision-history.xml found in file " + branch2);
+		}
+		catch(NullPointerException e){
+			System.out.println("No revision-history.xml found in file " + branch2);
+		}
+		
+		String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
+		merge3dm(arguments);
+		//String[] arguments2 = {"-m", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", "revision-history.xml"};
+		//merge3dm(arguments2);
+		
+		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory", "branch2RevisionHistory.xml");
+		createDocx(base, branch1, branch2);
+		endTime = System.nanoTime();
+		System.out.println("Completion time: " + ((endTime-startTime)/1000000000.0) + " seconds.");
+		
+		System.exit(0);
 	}
 	
 	static String getDocx(String type){
