@@ -95,7 +95,7 @@ public class Vvord{
 		//merge3dm(arguments2);
 		
 		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory", "branch2RevisionHistory.xml");
-		createDocx(base, branch1, branch2);
+		createDocx(base, branch1, branch2, "merged.docx");
 		endTime = System.nanoTime();
 		System.out.println("Completion time: " + ((endTime-startTime)/1000000000.0) + " seconds.");
 		
@@ -311,7 +311,7 @@ public class Vvord{
 	}
 	
 	
-	static void createDocx(String base, String branch1, String branch2){
+	static void createDocx(String base, String branch1, String branch2, String outputFile){
 		try{
 			ZipFile docxFile = new ZipFile(base);
 			ZipFile branch1Docx = new ZipFile(branch1);
@@ -323,7 +323,7 @@ public class Vvord{
 			byte[] buffer = new byte[1024];
 			int length;
 			
-			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream("merged.docx"));
+			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile));
 			
 			while(enu.hasMoreElements()){
 				
