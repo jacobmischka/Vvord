@@ -24,7 +24,7 @@ public class Vvord{
 	static JFrame frame;
 	static FileDialog browser;
 	static long startTime, endTime;
-	static String docxId, branch1Id, branch2Id;
+	static String docxId, baseId, branch1Id, branch2Id;
 
 	public static void main(String[] args){
 	startTime = System.nanoTime();
@@ -34,21 +34,67 @@ public class Vvord{
 	String branch1 = getDocx("branch1");
 	String branch2 = getDocx("branch2");
 	
-	extractXml(base, "base.xml", "word"+File.separator+"document.xml");
-	extractXml(base, "baseRevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+	try{
+		extractXml(base, "base.xml", "word"+File.separator+"document.xml");
+	}
+	catch(IOException e){
+		System.err.println("Error reading document.xml in file " + base);
+		e.printStackTrace();
+		System.exit(1);
+	}
+	try{
+		extractXml(base, "baseRevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+	}
+	catch(IOException e){
+		System.out.println("No revision-history.xml found in file " + base);
+	}
+	catch(NullPointerException e){
+		System.out.println("No revision-history.xml found in file " + base);
+	}
 	
-	extractXml(branch1, "branch1.xml", "word"+File.separator+"document.xml");
-	extractXml(branch1, "branch1RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
 	
-	extractXml(branch2, "branch2.xml", "word"+File.separator+"document.xml");
-	extractXml(branch2, "branch2RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+	try{
+		extractXml(branch1, "branch1.xml", "word"+File.separator+"document.xml");
+	}
+	catch(IOException e){
+		System.err.println("Error reading document.xml in file " + branch1);
+		e.printStackTrace();
+		System.exit(1);		
+	}
+	try{
+		extractXml(branch1, "branch1RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+	}
+	catch(IOException e){
+		System.out.println("No revision-history.xml found in file " + branch1);
+	}
+	catch(NullPointerException e){
+		System.out.println("No revision-history.xml found in file " + branch1);
+	}
+		
+	try{
+		extractXml(branch2, "branch2.xml", "word"+File.separator+"document.xml");
+	}
+	catch(IOException e){
+		System.err.println("Error reading document.xml in file " + branch2);
+		e.printStackTrace();
+		System.exit(1);		
+	}
+	try{
+		extractXml(branch2, "branch2RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+	}
+	catch(IOException e){
+		System.out.println("No revision-history.xml found in file " + branch2);
+	}
+	catch(NullPointerException e){
+		System.out.println("No revision-history.xml found in file " + branch2);
+	}
 	
 	String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
 	merge3dm(arguments);
-	String[] arguments2 = {"-m", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", "revision-history.xml"};
-	merge3dm(arguments2);
+	//String[] arguments2 = {"-m", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", "revision-history.xml"};
+	//merge3dm(arguments2);
 	
-	updateRevisionHistory("baseRevisionHistory.xml", base, branch1, branch2);
+	updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory", "branch2RevisionHistory.xml");
 	createDocx(base, branch1, branch2);
 	endTime = System.nanoTime();
 	System.out.println("Completion time: " + ((endTime-startTime)/1000000000.0) + " seconds.");
@@ -67,9 +113,9 @@ public class Vvord{
 		
 	}
 	
-	static File extractXml(String name, String outputName, String entryName){
+	static File extractXml(String name, String outputName, String entryName) throws IOException{
 		
-		try{
+	//	try{
 			ZipFile docx = new ZipFile(name);
 			ZipEntry document = docx.getEntry(entryName);
 			File file = new File(outputName);
@@ -84,14 +130,14 @@ public class Vvord{
 			fos.close();
 
 			return file;
-		}
+	/*	}
 		catch(IOException e){
 			System.err.println("Error extracting " + name);
 			e.printStackTrace();
 			System.exit(1);
 		}
 		
-		return null;
+		return null; */
 	}
 	
 	static void merge3dm(String[] args){
@@ -106,43 +152,112 @@ public class Vvord{
 	
 	static void updateRevisionHistory(String revisionHistoryXml, String base, String branch1, String branch2){
 		//might need to manually combine histories
-		try{
-			InputStream is = new FileInputStream(revisionHistoryXml);
-			RevisionHistory revisionHistory = new RevisionHistory();
-			revisionHistory.readXML(revisionHistoryXml);
-			String id = UUID.randomUUID().toString();
-			Revision currentRevision = new Revision(id);
-			
-			String computerName = InetAddress.getLocalHost().getHostName();
-			currentRevision.author = "Author Name@"+computerName; //get passed as argument
-			Calendar cal = Calendar.getInstance();
-			currentRevision.timestamp = cal.get(Calendar.YEAR)+"-"+cal.get(Calendar.MONTH)+"-"+cal.get(Calendar.DATE)+"T"+cal.get(Calendar.HOUR_OF_DAY)+":"+cal.get(Calendar.MINUTE)+":"+cal.get(Calendar.SECOND);
-			
-			RevisionHistory baseRevisionHistory = new RevisionHistory();
-			baseRevisionHistory.readXML(base);
-			currentRevision.parents.add(baseRevisionHistory.current);
-			RevisionHistory branch1RevisionHistory = new RevisionHistory();
-			branch1RevisionHistory.readXML(branch1);
-			currentRevision.parents.add(branch1RevisionHistory.current);
-			branch1Id = branch1RevisionHistory.current;
-			RevisionHistory branch2RevisionHistory = new RevisionHistory();
-			branch2RevisionHistory.readXML(branch2);
-			currentRevision.parents.add(branch2RevisionHistory.current);
-			branch2Id = branch2RevisionHistory.current;
-			
-			revisionHistory.add(currentRevision);
-			revisionHistory.current = id;
-			
-			revisionHistory.writeXML(revisionHistoryXml);
-			
+		
+		RevisionHistory revisionHistory = new RevisionHistory();
+		String id = UUID.randomUUID().toString();
+		Revision currentRevision = new Revision(id);
+		
+		/*
+		try{	
+			revisionHistory.readXML(revisionHistoryXml);	
 		}
 		catch(FileNotFoundException e){
 			System.err.println("Existing revision-history.xml file not found.");
 		}
 		catch(XMLStreamException e){
 			e.printStackTrace();
+		} */
+		
+		String computerName;
+		
+		try{
+			computerName = InetAddress.getLocalHost().getHostName();
 		}
 		catch(UnknownHostException e){
+			e.printStackTrace();
+			computerName = "Unknown";
+		}
+		
+		currentRevision.author = "Author Name@"+computerName; //get passed as argument
+		currentRevision.location = ""; 
+		Calendar cal = Calendar.getInstance();
+		currentRevision.timestamp = cal.get(Calendar.YEAR)+"-"+cal.get(Calendar.MONTH)+"-"+cal.get(Calendar.DATE)+"T"+cal.get(Calendar.HOUR_OF_DAY)+":"+cal.get(Calendar.MINUTE)+":"+cal.get(Calendar.SECOND);
+		
+		
+		try{	
+			RevisionHistory baseRevisionHistory = new RevisionHistory();
+			baseRevisionHistory.readXML(base);
+			baseId = baseRevisionHistory.current;
+			for(int i = 0; i < baseRevisionHistory.revisions.size(); i++){
+				if(!revisionHistory.revisions.contains(baseRevisionHistory.revisions.get(i))){
+					revisionHistory.add(baseRevisionHistory.revisions.get(i));
+				}
+			}
+		}
+		catch(FileNotFoundException e){
+			System.err.println("Existing revision-history.xml file not found in file " + base);
+			baseId = UUID.randomUUID().toString();
+		}
+		catch(XMLStreamException e){
+			e.printStackTrace();
+		}
+		
+		currentRevision.parents.add(baseId);
+		
+		
+		try{
+			RevisionHistory branch1RevisionHistory = new RevisionHistory();
+			branch1RevisionHistory.readXML(branch1);
+			branch1Id = branch1RevisionHistory.current;
+			for(int i = 0; i < branch1RevisionHistory.revisions.size(); i++){
+				if(!revisionHistory.revisions.contains(branch1RevisionHistory.revisions.get(i))){
+					revisionHistory.add(branch1RevisionHistory.revisions.get(i));
+				}
+			}
+		}
+		catch(FileNotFoundException e){
+			System.err.println("Existing revision-history.xml file not found in file " + branch1);
+			branch1Id = UUID.randomUUID().toString();
+		}
+		catch(XMLStreamException e){
+			e.printStackTrace();
+		}
+		
+		currentRevision.parents.add(branch1Id);
+		
+		
+		
+		try{
+			RevisionHistory branch2RevisionHistory = new RevisionHistory();
+			branch2RevisionHistory.readXML(branch2);
+			branch2Id = branch2RevisionHistory.current;
+			for(int i = 0; i < branch2RevisionHistory.revisions.size(); i++){
+				if(!revisionHistory.revisions.contains(branch2RevisionHistory.revisions.get(i))){
+					revisionHistory.add(branch2RevisionHistory.revisions.get(i));
+				}
+			}
+		}
+		catch(FileNotFoundException e){
+			System.err.println("Existing revision-history.xml file not found in file " + branch2);
+			branch2Id = UUID.randomUUID().toString();
+		}
+		catch(XMLStreamException e){
+			e.printStackTrace();
+		}
+		
+		currentRevision.parents.add(branch2Id);
+		
+		
+		revisionHistory.add(currentRevision);
+		revisionHistory.current = id;
+		
+		try{
+			revisionHistory.writeXML(revisionHistoryXml);
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(XMLStreamException e){
 			e.printStackTrace();
 		}
 	}
@@ -220,12 +335,13 @@ public class Vvord{
 					is = new FileInputStream("document.xml"); 
 					System.out.println(entry);
 				}
+				/*
 				else if(entry.getName().equals("history"+File.separator+"revision-history.xml")){
 					zos.putNextEntry(new ZipEntry(entry.getName()));
-					updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
+					//updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
 					is = new FileInputStream("revision-history.xml");
 					System.out.println(entry);
-				}
+				} */
 				else if(entry.getName().startsWith("history")){
 					zos.putNextEntry(entry);
 					is = docxFile.getInputStream(entry);
@@ -274,6 +390,17 @@ public class Vvord{
 				zos.closeEntry();
 			}
 			zos.closeEntry();
+			
+			ZipEntry entry = new ZipEntry("history"+File.separator+"revision-history.xml");
+			is = new FileInputStream("revision-history.xml");
+			zos.putNextEntry(entry);
+			System.out.println(entry);
+			while((length = is.read(buffer)) >= 0){
+				zos.write(buffer, 0, length);
+			}
+			is.close();
+			zos.closeEntry();
+			
 			zos.close();
 		}
 		catch(FileNotFoundException e){

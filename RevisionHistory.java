@@ -22,6 +22,10 @@ class RevisionHistory{
 	String current;
 	ArrayList<Revision> revisions;
 	
+	public RevisionHistory(){
+		revisions = new ArrayList<Revision>();
+	}
+	
 	
 
 	String printXML(){
@@ -113,11 +117,13 @@ class RevisionHistory{
 			eventWriter.add(eventFactory.createAttribute("location", r.location));
 			eventWriter.add(endln);
 			
-			eventWriter.add(eventFactory.createStartElement("", "", "parent")); //add attributes
-			for(String p:r.parents)
+			for(String p:r.parents){
+				eventWriter.add(eventFactory.createStartElement("", "", "parent")); //add attributes
+				
 				eventWriter.add(eventFactory.createAttribute("id", p));
-			eventWriter.add(eventFactory.createEndElement("", "", "parent"));
-			eventWriter.add(endln);
+				eventWriter.add(eventFactory.createEndElement("", "", "parent"));
+				eventWriter.add(endln);
+			}
 			
 			eventWriter.add(eventFactory.createStartElement("", "", "comments"));
 			eventWriter.add(eventFactory.createCharacters(r.comments));
@@ -150,11 +156,12 @@ class Revision{
 	ArrayList<String> parents;
 	
 	Revision(){
-		
+		parents = new ArrayList<String>();
 	}
 	
 	Revision(String id){
 		this.id = id;
+		parents = new ArrayList<String>();
 	}
 	
 }
