@@ -22,6 +22,10 @@ class RevisionHistory{
 	String current;
 	ArrayList<Revision> revisions;
 	
+	public RevisionHistory(){
+		revisions = new ArrayList<Revision>();
+	}
+	
 	
 
 	String printXML(){
@@ -46,13 +50,14 @@ class RevisionHistory{
 					Iterator<Attribute> itr = startElement.getAttributes();
 					while(itr.hasNext()){
 						Attribute attribute = itr.next();
-						if(attribute.getName().equals("id"))
+						if(attribute.getName().toString().equals("id")){
 							revision.id = attribute.getValue();
-						else if(attribute.getName().equals("location"))
+						}
+						else if(attribute.getName().toString().equals("location"))
 							revision.location = attribute.getValue();
-						else if(attribute.getName().equals("author"))
+						else if(attribute.getName().toString().equals("author"))
 							revision.author = attribute.getValue();
-						else if(attribute.getName().equals("timestamp"))
+						else if(attribute.getName().toString().equals("timestamp"))
 							revision.timestamp = attribute.getValue();
 					}
 				}
@@ -60,7 +65,7 @@ class RevisionHistory{
 					Iterator<Attribute> itr = startElement.getAttributes();
 					while(itr.hasNext()){
 						Attribute attribute = itr.next();
-						if(attribute.getName().equals("current"))
+						if(attribute.getName().toString().equals("current"))
 							current = attribute.getValue();
 					}
 				}
@@ -68,7 +73,7 @@ class RevisionHistory{
 					Iterator<Attribute> itr = startElement.getAttributes();
 					while(itr.hasNext()){
 						Attribute attribute = itr.next();
-						if(attribute.getName().equals("id"))
+						if(attribute.getName().toString().equals("id"))
 							revision.parents.add(attribute.getValue());
 					}
 				}
@@ -113,15 +118,18 @@ class RevisionHistory{
 			eventWriter.add(eventFactory.createAttribute("location", r.location));
 			eventWriter.add(endln);
 			
-			eventWriter.add(eventFactory.createStartElement("", "", "parent")); //add attributes
-			for(String p:r.parents)
+			for(String p:r.parents){
+				eventWriter.add(eventFactory.createStartElement("", "", "parent")); //add attributes
+				
 				eventWriter.add(eventFactory.createAttribute("id", p));
-			eventWriter.add(eventFactory.createEndElement("", "", "parent"));
-			eventWriter.add(endln);
+				eventWriter.add(eventFactory.createEndElement("", "", "parent"));
+				eventWriter.add(endln);
+			}
 			
 			eventWriter.add(eventFactory.createStartElement("", "", "comments"));
 			eventWriter.add(eventFactory.createCharacters(r.comments));
 			eventWriter.add(eventFactory.createEndElement("", "", "comments"));
+			eventWriter.add(eventFactory.createEndElement("", "", "revision"));
 			eventWriter.add(endln);
 		}
 		
@@ -150,11 +158,12 @@ class Revision{
 	ArrayList<String> parents;
 	
 	Revision(){
-		
+		parents = new ArrayList<String>();
 	}
 	
 	Revision(String id){
 		this.id = id;
+		parents = new ArrayList<String>();
 	}
 	
 }
