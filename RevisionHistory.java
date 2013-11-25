@@ -10,7 +10,6 @@ import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.Attribute;
-import javax.xml.namespace.QName;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

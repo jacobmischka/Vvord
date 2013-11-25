@@ -91,9 +91,7 @@ public class Vvord{
 		
 		String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
 		merge3dm(arguments);
-		//String[] arguments2 = {"-m", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", "revision-history.xml"};
-		//merge3dm(arguments2);
-		
+
 		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
 		createDocx(base, branch1, branch2, "merged.docx");
 		endTime = System.nanoTime();
@@ -115,7 +113,6 @@ public class Vvord{
 	
 	static File extractXml(String name, String outputName, String entryName) throws IOException{
 		
-	//	try{
 			ZipFile docx = new ZipFile(name);
 			ZipEntry document = docx.getEntry(entryName);
 			File file = new File(outputName);
@@ -130,14 +127,6 @@ public class Vvord{
 			fos.close();
 
 			return file;
-	/*	}
-		catch(IOException e){
-			System.err.println("Error extracting " + name);
-			e.printStackTrace();
-			System.exit(1);
-		}
-		
-		return null; */
 	}
 	
 	static void merge3dm(String[] args){
@@ -157,17 +146,6 @@ public class Vvord{
 		String id = UUID.randomUUID().toString();
 		Revision currentRevision = new Revision(id);
 		
-		/*
-		try{	
-			revisionHistory.readXML(revisionHistoryXml);	
-		}
-		catch(FileNotFoundException e){
-			System.err.println("Existing revision-history.xml file not found.");
-		}
-		catch(XMLStreamException e){
-			e.printStackTrace();
-		} */
-		
 		String computerName;
 		
 		try{
@@ -178,8 +156,8 @@ public class Vvord{
 			computerName = "Unknown";
 		}
 		
-		currentRevision.author = "Author Name@"+computerName; //get passed as argument
-		currentRevision.location = ""; 
+		currentRevision.author = "Author Name@"+computerName; //get passed as argument, or grab from metadata maybe
+		currentRevision.location = File.separator+"history"+File.separator+currentRevision.id; 
 		Calendar cal = Calendar.getInstance();
 		currentRevision.timestamp = cal.get(Calendar.YEAR)+"-"+cal.get(Calendar.MONTH)+"-"+cal.get(Calendar.DATE)+"T"+cal.get(Calendar.HOUR_OF_DAY)+":"+cal.get(Calendar.MINUTE)+":"+cal.get(Calendar.SECOND);
 		
