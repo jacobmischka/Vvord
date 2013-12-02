@@ -128,6 +128,7 @@ class RevisionHistory{
 			eventWriter.add(eventFactory.createStartElement("", "", "comments"));
 			eventWriter.add(eventFactory.createCharacters(r.comments));
 			eventWriter.add(eventFactory.createEndElement("", "", "comments"));
+			eventWriter.add(endln);
 			eventWriter.add(eventFactory.createEndElement("", "", "revision"));
 			eventWriter.add(endln);
 		}
