@@ -82,7 +82,9 @@ class RevisionMetadata{
 	void addOverride(String partName){
 		int type;
 		
-		if(partName.contains("fontTable.xml"))
+		if(partName.contains("rels"))
+			type = RELS;
+		else if(partName.contains("fontTable.xml"))
 			type = FONT_TABLE;
 		else if(partName.contains("document.xml"))
 			type = DOCUMENT;
@@ -98,8 +100,6 @@ class RevisionMetadata{
 			type = CORE;
 		else if(partName.contains("app.xml"))
 			type = APP;
-		else if(partName.contains("rels"))
-			type = RELS;
 		else
 			type = CONTENT_TYPE;
 		overrides.add(new Override(partName, CONTENT_TYPES[type]));

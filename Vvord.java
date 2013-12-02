@@ -27,9 +27,12 @@ public class Vvord{
 	static long startTime, endTime;
 	static String docxId, baseId, branch1Id, branch2Id;
 	static RevisionMetadata contentTypes;
+	static String authorName = "Author Name";
 
 	public static void main(String[] args){
 		frame = new JFrame();
+		if(args.length != 0)
+			authorName = args[0];
 		
 		String base = getDocx("base");
 		String branch1 = getDocx("branch1");
@@ -161,7 +164,7 @@ public class Vvord{
 			computerName = "Unknown";
 		}
 		
-		currentRevision.author = "Author Name@"+computerName; //get passed as argument, or grab from metadata maybe
+		currentRevision.author = authorName+"@"+computerName;
 		currentRevision.location = File.separator+"history"+File.separator+currentRevision.id; 
 		Calendar cal = Calendar.getInstance();
 		currentRevision.timestamp = cal.get(Calendar.YEAR)+"-"+cal.get(Calendar.MONTH)+"-"+cal.get(Calendar.DATE)+"T"+cal.get(Calendar.HOUR_OF_DAY)+":"+cal.get(Calendar.MINUTE)+":"+cal.get(Calendar.SECOND);
@@ -335,7 +338,7 @@ public class Vvord{
 				if(!entry.getName().equals("history"+File.separator+"revision-history.xml")){
 				
 					
-					zos.setMethod(entry.getMethod());
+					//zos.setMethod(entry.getMethod());
 					
 					if(entry.getName().equals("word"+File.separator+"document.xml")){
 						zos.putNextEntry(new ZipEntry(entry.getName()));
