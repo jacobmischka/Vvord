@@ -4,4 +4,6 @@ libs
 *.docx
 *.xml
 *.zip
+*.log
+*.rels
 
