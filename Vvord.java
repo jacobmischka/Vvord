@@ -405,7 +405,7 @@ public class Vvord{
 				is = branch2Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history"))
 					entry = new ZipEntry("history"+File.separator+branch2Id+File.separator+entry.getName()+"~");
-				if(entry.getName().contains("[")){
+				if(entry.getName().contains("[") || entry.getName().contains("]")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 				}
 				zos.putNextEntry(entry);
