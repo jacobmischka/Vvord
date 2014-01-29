@@ -13,8 +13,8 @@ import javax.xml.stream.events.Attribute;
 
 class RevisionMetadata{
 	
-	final static String[] CONTENT_TYPES = {"application/vnd.openxmlformats-package.relationships+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml", "application/vnd.openxmlformats-package.relationships+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml", "application/vnd.openxmlformats-package.core-properties+xml", "application/xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml", "application/vnd.openxmlformats-officedocument.theme+xml"};
-	final static String[] PART_NAMES = {"/_rels/.rels", "/word/settings.xml", "/word/_rels/document.xml.rels", "/word/fontTable.xml", "/word/styles.xml", "/word/document.xml", "/docProps/app.xml", "/docProps/core.xml"};
+	final static String[] CONTENT_TYPES = {"application/vnd.openxmlformats-package.relationships+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml", "application/vnd.openxmlformats-package.relationships+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml", "application/vnd.openxmlformats-package.core-properties+xml", "application/xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml", "application/vnd.openxmlformats-officedocument.theme+xml", "application/vnd.ms-word.stylesWithEffects+xml"};
+	final static String[] PART_NAMES = {"/_rels/.rels", "/word/settings.xml", "/word/_rels/document.xml.rels", "/word/fontTable.xml", "/word/styles.xml", "/word/document.xml", "/docProps/app.xml", "/docProps/core.xml", "/word/stylesWithEffects.xml"};
 	final static String APP_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties";
 	final static String CORE_TYPE = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties";
 	final static String DOCUMENT_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
@@ -30,6 +30,7 @@ class RevisionMetadata{
 	final static int CONTENT_TYPE = 8;
 	final static int WEB_SETTINGS = 9;
 	final static int THEME_1 = 10;
+	final static int STYLES_WITH_EFFECTS = 11;
 	
 	ArrayList<Override> overrides = new ArrayList<Override>();
 	ArrayList<Relationship> relationships = new ArrayList<Relationship>();
@@ -100,6 +101,8 @@ class RevisionMetadata{
 			type = CORE;
 		else if(partName.contains("app.xml"))
 			type = APP;
+		else if(partName.contains("stylesWithEffects.xml"))
+			type = STYLES_WITH_EFFECTS;
 		else
 			type = CONTENT_TYPE;
 		overrides.add(new Override(partName, CONTENT_TYPES[type]));
