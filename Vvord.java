@@ -341,7 +341,7 @@ public class Vvord{
 				if(!entry.getName().equals("history"+File.separator+"revision-history.xml")){
 				
 					
-					//zos.setMethod(entry.getMethod());
+					zos.setMethod(oldEntry.getMethod());
 					
 					if(entry.getName().equals("word"+File.separator+"document.xml")){
 						zos.putNextEntry(new ZipEntry(entry.getName()));
