@@ -44,7 +44,7 @@ public class Vvord{
 		startTime = System.currentTimeMillis();
 		
 		try{
-			extractXml(base, "base.xml", "word"+File.separator+"document.xml");
+			extractXml(base, "base.xml", "word/document.xml");
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + base);
@@ -52,7 +52,7 @@ public class Vvord{
 			System.exit(1);
 		}
 		try{
-			extractXml(base, "baseRevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+			extractXml(base, "baseRevisionHistory.xml", "history/revision-history.xml");
 		}
 		catch(IOException e){
 			System.out.println("No revision-history.xml found in file " + base);
@@ -63,7 +63,7 @@ public class Vvord{
 		
 		
 		try{
-			extractXml(branch1, "branch1.xml", "word"+File.separator+"document.xml");
+			extractXml(branch1, "branch1.xml", "word/document.xml");
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + branch1);
@@ -71,7 +71,7 @@ public class Vvord{
 			System.exit(1);		
 		}
 		try{
-			extractXml(branch1, "branch1RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+			extractXml(branch1, "branch1RevisionHistory.xml", "history/revision-history.xml");
 		}
 		catch(IOException e){
 			System.out.println("No revision-history.xml found in file " + branch1);
@@ -81,7 +81,7 @@ public class Vvord{
 		}
 			
 		try{
-			extractXml(branch2, "branch2.xml", "word"+File.separator+"document.xml");
+			extractXml(branch2, "branch2.xml", "word/document.xml");
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + branch2);
@@ -89,7 +89,7 @@ public class Vvord{
 			System.exit(1);		
 		}
 		try{
-			extractXml(branch2, "branch2RevisionHistory.xml", "history"+File.separator+"revision-history.xml");
+			extractXml(branch2, "branch2RevisionHistory.xml", "history/revision-history.xml");
 		}
 		catch(IOException e){
 			System.out.println("No revision-history.xml found in file " + branch2);
@@ -165,7 +165,7 @@ public class Vvord{
 		}
 		
 		currentRevision.author = authorName+"@"+computerName;
-		currentRevision.location = File.separator+"history"+File.separator+currentRevision.id; 
+		currentRevision.location = "/history/"+currentRevision.id; 
 		Calendar cal = Calendar.getInstance();
 		currentRevision.timestamp = cal.get(Calendar.YEAR)+"-"+cal.get(Calendar.MONTH)+"-"+cal.get(Calendar.DATE)+"T"+cal.get(Calendar.HOUR_OF_DAY)+":"+cal.get(Calendar.MINUTE)+":"+cal.get(Calendar.SECOND);
 		
@@ -268,7 +268,7 @@ public class Vvord{
 				is = docx.getInputStream(entry);
 				String name = entry.getName();
 				File file = new File(name);
-				if(name.endsWith(File.separator))
+				if(name.endsWith("/"))
 					file.mkdirs();
 				
 				File parent = file.getParentFile();
@@ -305,9 +305,9 @@ public class Vvord{
 		int length;
 		System.out.println(entry);
 		if(!entry.getName().equals("[Content_Types].xml"))
-			contentTypes.addOverride(File.separator+entry.getName());
+			contentTypes.addOverride("/"+entry.getName());
 		if(entry.getName().startsWith("history"))
-			contentTypes.addRelationship(UUID.randomUUID().toString(), entry.getName().substring(entry.getName().indexOf(File.separator)+1));
+			contentTypes.addRelationship(UUID.randomUUID().toString(), entry.getName().substring(entry.getName().indexOf("/")+1));
 						
 		while((length = is.read(buffer)) >= 0){
 			zos.write(buffer, 0, length);
@@ -338,12 +338,12 @@ public class Vvord{
 				oldEntry = (ZipEntry)enu.nextElement();
 				entry = new ZipEntry(oldEntry.getName());
 				
-				if(!entry.getName().equals("history"+File.separator+"revision-history.xml")){
+				if(!entry.getName().equals("history/revision-history.xml")){
 				
 					
 					zos.setMethod(oldEntry.getMethod());
 					
-					if(entry.getName().equals("word"+File.separator+"document.xml")){
+					if(entry.getName().equals("word/document.xml")){
 						zos.putNextEntry(new ZipEntry(entry.getName()));
 						is = new FileInputStream("document.xml"); 
 						writeEntry(entry, is, zos);
@@ -354,13 +354,13 @@ public class Vvord{
 						is = docxFile.getInputStream(entry);
 						writeEntry(entry, is, zos);
 					}
-					else if(entry.getName().equals("_rels"+File.separator+".rels")){
-						entry = new ZipEntry("_rels"+File.separator+".rels");
+					else if(entry.getName().equals("_rels/.rels")){
+						entry = new ZipEntry("_rels/.rels");
 						RevisionMetadata rels = new RevisionMetadata();
-						rels.addRelationship("rId3", RevisionMetadata.APP_TYPE, "docProps"+File.separator+"app.xml");
-						rels.addRelationship("rId2", RevisionMetadata.CORE_TYPE, "docProps"+File.separator+"core.xml");
-						rels.addRelationship("rId1", RevisionMetadata.DOCUMENT_TYPE, "word"+File.separator+"document.xml");
-						rels.addRelationship("revisionHistory", RevisionMetadata.REVISION_HISTORY_TYPE, "history"+File.separator+"revision-history.xml");
+						rels.addRelationship("rId3", RevisionMetadata.APP_TYPE, "docProps/app.xml");
+						rels.addRelationship("rId2", RevisionMetadata.CORE_TYPE, "docProps/core.xml");
+						rels.addRelationship("rId1", RevisionMetadata.DOCUMENT_TYPE, "word/document.xml");
+						rels.addRelationship("revisionHistory", RevisionMetadata.REVISION_HISTORY_TYPE, "history/revision-history.xml");
 						rels.writeRels(".rels");
 						is = new FileInputStream(".rels");
 						zos.putNextEntry(entry);
@@ -379,7 +379,7 @@ public class Vvord{
 					
 					if(!entry.getName().startsWith("history")){
 						is = docxFile.getInputStream(entry);
-						entry = new ZipEntry("history"+File.separator+baseId+File.separator+entry.getName()+"~");
+						entry = new ZipEntry("history/"+baseId+"/"+entry.getName()+"~");
 						if(entry.getName().contains("[")){
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 						}
@@ -395,7 +395,7 @@ public class Vvord{
 				zos.setMethod(oldEntry.getMethod());
 				is = branch1Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history"))
-					entry = new ZipEntry("history"+File.separator+branch1Id+File.separator+entry.getName()+"~");
+					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
 				if(entry.getName().contains("[")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 				}
@@ -409,7 +409,7 @@ public class Vvord{
 				zos.setMethod(oldEntry.getMethod());
 				is = branch2Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history"))
-					entry = new ZipEntry("history"+File.separator+branch2Id+File.separator+entry.getName()+"~");
+					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName()+"~");
 				if(entry.getName().contains("[") || entry.getName().contains("]")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 				}
@@ -417,12 +417,12 @@ public class Vvord{
 				writeEntry(entry, is, zos);
 			}
 			
-			entry = new ZipEntry("history"+File.separator+"revision-history.xml");
+			entry = new ZipEntry("history/revision-history.xml");
 			is = new FileInputStream("revision-history.xml");
 			zos.putNextEntry(entry);
 			writeEntry(entry, is, zos);
 			
-			entry = new ZipEntry("history"+File.separator+"_rels"+File.separator+"revision-history.xml.rels");
+			entry = new ZipEntry("history/_rels/revision-history.xml.rels");
 			zos.putNextEntry(entry);
 			contentTypes.writeRels("revision-history.xml.rels");
 			is = new FileInputStream("revision-history.xml.rels");
