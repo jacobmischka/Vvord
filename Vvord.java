@@ -341,7 +341,7 @@ public class Vvord{
 				if(!entry.getName().equals("history/revision-history.xml")){
 				
 					
-					zos.setMethod(oldEntry.getMethod());
+					//zos.setMethod(oldEntry.getMethod());
 					
 					if(entry.getName().equals("word/document.xml")){
 						zos.putNextEntry(new ZipEntry(entry.getName()));
@@ -392,7 +392,7 @@ public class Vvord{
 			while(branch1enu.hasMoreElements()){
 				oldEntry = (ZipEntry)branch1enu.nextElement();
 				entry = new ZipEntry(oldEntry.getName());
-				zos.setMethod(oldEntry.getMethod());
+				//zos.setMethod(oldEntry.getMethod());
 				is = branch1Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history"))
 					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
@@ -406,7 +406,7 @@ public class Vvord{
 			while(branch2enu.hasMoreElements()){
 				oldEntry = (ZipEntry)branch2enu.nextElement();
 				entry = new ZipEntry(oldEntry.getName());
-				zos.setMethod(oldEntry.getMethod());
+				//zos.setMethod(oldEntry.getMethod());
 				is = branch2Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history"))
 					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName()+"~");

@@ -82,11 +82,9 @@ class RevisionHistory{
 				String name = element.getName().getLocalPart();
 				if(name.equals("revision"))
 					add(revision);
-				else{
-					switch(name){			
-						case "comments": revision.comments = characters;
-					}
-				}
+				else if(name.equals("comments"))
+					revision.comments = characters;
+				
 			}
 			else if(event.isCharacters())
 				characters = event.asCharacters().getData();
