@@ -20,7 +20,7 @@ import java.util.Calendar;
 import javax.xml.stream.XMLStreamException;
 
 public class Vvord{
-	//TODO: update Content_Types.xml, debugging, error checking, documentation
+	//TODO: grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better
 	
 	static JFrame frame;
 	static FileDialog browser;
