@@ -29,17 +29,22 @@ public class Vvord{
 	static long startTime, endTime;
 	static String docxId, baseId, branch1Id, branch2Id;
 	static RevisionMetadata contentTypes;
-	static String authorName = "Author Name";
+	static String authorName;
 	static String baseLocation;
 
 	public static void main(String[] args){
-		frame = new JFrame();
-		if(args.length > 0)
-			authorName = args[0];
-		
+		frame = new JFrame();		
 
 		String branch1 = getDocx("branch1");
+		if(branch1 == null){
+			JOptionPane.showMessageDialog(null, "Error: please select a docx file");
+			System.exit(0);
+		}
 		String branch2 = getDocx("branch2");
+		if(branch2 == null){
+			JOptionPane.showMessageDialog(null, "Error: please select a docx file");
+			System.exit(0);
+		}
 		
 		try{
 			extractXml(branch1, "branch1.xml", "word/document.xml");
@@ -84,16 +89,39 @@ public class Vvord{
 		String base;
 		if(baseRevision == null){ //no shared base found
 			//make a dialog saying no base was found and to select one or try a straight blank one maybe
+			JOptionPane.showMessageDialog(null, "No common base revision found, please select one");
 			base = getDocx("base");
+			if(base == null){
+				JOptionPane.showMessageDialog(null, "Error: please select a docx file");
+				System.exit(0);
+			}	
 		}
 		else{ //shared base found
 			base = branch1;
 			baseLocation = baseRevision.location;
 		}
 		
+		
+		
 		String outputName = JOptionPane.showInputDialog("Enter the filename for the merged document");
+		if(outputName.trim().equals("") || outputName == null){
+			JOptionPane.showMessageDialog(null, "Error, please enter a filename for the merged document.");
+			System.exit(0);
+		}
 		if(!outputName.endsWith(".docx"))
 			outputName += ".docx";
+			
+		if(args.length > 0)
+			authorName = args[0];
+		else
+			authorName = JOptionPane.showInputDialog("Please enter an author name.");
+			
+		if(authorName == null || authorName.trim().equals(""))
+			authorName = "Author Name";
+		
+		String comments = JOptionPane.showInputDialog("Would you like to enter a comment for this merge?");
+		
+		
 		
 		startTime = System.currentTimeMillis();
 		
@@ -119,8 +147,8 @@ public class Vvord{
 		
 		String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
 		merge3dm(arguments);
-
-		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
+		
+		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", comments);
 		createDocx(base, branch1, branch2, outputName);
 		endTime = System.currentTimeMillis();
 		System.out.println("Completion time: " + ((endTime-startTime)/1000.0) + " seconds.");
@@ -134,7 +162,10 @@ public class Vvord{
 		browser.setFilenameFilter(new DocxFilter());
 		browser.setVisible(true);
 		
-		return (browser.getDirectory()+browser.getFile());
+		if(browser.getFile() == null)
+			return null;
+		else
+			return (browser.getDirectory()+browser.getFile());
 		
 		
 	}
@@ -167,7 +198,7 @@ public class Vvord{
 		}
 	}
 	
-	static void updateRevisionHistory(String revisionHistoryXml, String base, String branch1, String branch2){
+	static void updateRevisionHistory(String revisionHistoryXml, String base, String branch1, String branch2, String comments){
 		
 		RevisionHistory revisionHistory = new RevisionHistory();
 		String id = UUID.randomUUID().toString();
@@ -185,6 +216,7 @@ public class Vvord{
 		
 		currentRevision.author = authorName+"@"+computerName;
 		currentRevision.location = "/history/"+currentRevision.id; 
+		currentRevision.comments = comments;
 		Calendar cal = Calendar.getInstance();
 		currentRevision.timestamp = cal.get(Calendar.YEAR)+"-"+cal.get(Calendar.MONTH)+"-"+cal.get(Calendar.DATE)+"T"+cal.get(Calendar.HOUR_OF_DAY)+":"+cal.get(Calendar.MINUTE)+":"+cal.get(Calendar.SECOND);
 		
