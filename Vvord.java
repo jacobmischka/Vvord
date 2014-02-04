@@ -19,6 +19,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Calendar;
 import javax.xml.stream.XMLStreamException;
+import java.util.ArrayList;
 
 public class Vvord{
 	//TODO: grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better, kill when cancel is selected, test a lot using molhado tool
@@ -29,39 +30,16 @@ public class Vvord{
 	static String docxId, baseId, branch1Id, branch2Id;
 	static RevisionMetadata contentTypes;
 	static String authorName = "Author Name";
+	static String baseLocation;
 
 	public static void main(String[] args){
 		frame = new JFrame();
 		if(args.length > 0)
 			authorName = args[0];
 		
-		String base = getDocx("base");
+
 		String branch1 = getDocx("branch1");
 		String branch2 = getDocx("branch2");
-		String outputName = JOptionPane.showInputDialog("Enter the filename for the merged document");
-		if(!outputName.endsWith(".docx"))
-			outputName += ".docx";
-		
-		startTime = System.currentTimeMillis();
-		
-		try{
-			extractXml(base, "base.xml", "word/document.xml");
-		}
-		catch(IOException e){
-			System.err.println("Error reading document.xml in file " + base);
-			e.printStackTrace();
-			System.exit(1);
-		}
-		try{
-			extractXml(base, "baseRevisionHistory.xml", "history/revision-history.xml");
-		}
-		catch(IOException e){
-			System.out.println("No revision-history.xml found in file " + base);
-		}
-		catch(NullPointerException e){
-			System.out.println("No revision-history.xml found in file " + base);
-		}
-		
 		
 		try{
 			extractXml(branch1, "branch1.xml", "word/document.xml");
@@ -98,6 +76,46 @@ public class Vvord{
 		catch(NullPointerException e){
 			System.out.println("No revision-history.xml found in file " + branch2);
 		}
+		
+		
+		
+		Revision baseRevision = findSharedBase("branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
+		baseLocation = "";
+		String base;
+		if(baseRevision == null){ //no shared base found
+			//make a dialog saying no base was found and to select one or try a straight blank one maybe
+			base = getDocx("base");
+		}
+		else{ //shared base found
+			base = branch1;
+			baseLocation = baseRevision.location;
+		}
+		
+		String outputName = JOptionPane.showInputDialog("Enter the filename for the merged document");
+		if(!outputName.endsWith(".docx"))
+			outputName += ".docx";
+		
+		startTime = System.currentTimeMillis();
+		
+		try{
+			extractXml(base, "base.xml", baseLocation+"word/document.xml");
+		}
+		catch(IOException e){
+			System.err.println("Error reading document.xml in file " + base);
+			e.printStackTrace();
+			System.exit(1);
+		}
+		try{
+			extractXml(base, "baseRevisionHistory.xml", baseLocation+"history/revision-history.xml");
+		}
+		catch(IOException e){
+			System.out.println("No revision-history.xml found in file " + base);
+		}
+		catch(NullPointerException e){
+			System.out.println("No revision-history.xml found in file " + base);
+		}
+		
+		
 		
 		String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
 		merge3dm(arguments);
@@ -337,7 +355,11 @@ public class Vvord{
 			while(enu.hasMoreElements()){
 				
 				oldEntry = (ZipEntry)enu.nextElement();
-				entry = new ZipEntry(oldEntry.getName());
+				String entryName = oldEntry.getName();
+				if(baseLocation != "")
+					entryName = entryName.replace(baseLocation, "");
+					
+				entry = new ZipEntry(entryName);
 				
 				if(!entry.getName().equals("history/revision-history.xml")){
 				
@@ -465,6 +487,53 @@ public class Vvord{
 			System.exit(1);
 		}
 				
+	}
+	
+	static Revision findSharedBase(String branch1, String branch2){
+		
+		try{
+			RevisionHistory branch1RevisionHistory = new RevisionHistory();
+			branch1RevisionHistory.readXML(branch1);
+
+			RevisionHistory branch2RevisionHistory = new RevisionHistory();
+			branch2RevisionHistory.readXML(branch2);
+						
+				
+			if(!branch1RevisionHistory.revisions.isEmpty() && !branch2RevisionHistory.revisions.isEmpty()){
+				ArrayList<Revision> sharedRevisions = new ArrayList<Revision>();
+				
+				for(int i = 0; i < branch1RevisionHistory.revisions.size(); i++){
+					for(int j = 0; j < branch2RevisionHistory.revisions.size(); j++){
+						if(branch1RevisionHistory.revisions.get(i).id.equals(branch2RevisionHistory.revisions.get(j).id))
+							sharedRevisions.add(branch1RevisionHistory.revisions.get(i)); //gonna need to actually look at parents
+					}
+				}
+				
+				if(!sharedRevisions.isEmpty()){
+					Revision mostRecent = sharedRevisions.get(0);
+					
+					for(int i = 0; i < sharedRevisions.size(); i++){
+						if(sharedRevisions.get(i).timestamp.compareTo(mostRecent.timestamp) > 0)
+							mostRecent = sharedRevisions.get(i);
+					}
+				
+					return mostRecent;
+				}
+				
+				return null;
+			}
+		}
+		catch(FileNotFoundException e){
+			System.err.println("Existing revision-history.xml file not found in both branches");
+			return null;
+		}
+		catch(XMLStreamException e){
+			e.printStackTrace();
+			return null;
+		}
+		
+		return null;
+		
 	}
 	
 }
