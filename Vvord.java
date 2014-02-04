@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.awt.FileDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import tdm.tool.TreeDiffMerge;
 import java.util.UUID;
 import java.net.InetAddress;
@@ -20,6 +21,7 @@ import java.net.UnknownHostException;
 import java.util.Calendar;
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
+import java.lang.ClassNotFoundException;
 
 public class Vvord{
 	//TODO: grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better, kill when cancel is selected, test a lot using molhado tool
@@ -33,16 +35,22 @@ public class Vvord{
 	static String baseLocation;
 
 	public static void main(String[] args){
+		try{
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		}
+		catch(Exception e){
+			System.err.println("System look and feel not found or identified.");
+		}
 		frame = new JFrame();		
 
 		String branch1 = getDocx("branch1");
 		if(branch1 == null){
-			JOptionPane.showMessageDialog(null, "Error: please select a docx file");
+			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
 		String branch2 = getDocx("branch2");
 		if(branch2 == null){
-			JOptionPane.showMessageDialog(null, "Error: please select a docx file");
+			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
 		
@@ -89,10 +97,10 @@ public class Vvord{
 		String base;
 		if(baseRevision == null){ //no shared base found
 			//make a dialog saying no base was found and to select one or try a straight blank one maybe
-			JOptionPane.showMessageDialog(null, "No common base revision found, please select one");
+			JOptionPane.showMessageDialog(null, "No common base revision found, please select one", "No base found", JOptionPane.WARNING_MESSAGE);
 			base = getDocx("base");
 			if(base == null){
-				JOptionPane.showMessageDialog(null, "Error: please select a docx file");
+				JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
 				System.exit(0);
 			}	
 		}
@@ -105,7 +113,7 @@ public class Vvord{
 		
 		String outputName = JOptionPane.showInputDialog("Enter the filename for the merged document");
 		if(outputName.trim().equals("") || outputName == null){
-			JOptionPane.showMessageDialog(null, "Error, please enter a filename for the merged document.");
+			JOptionPane.showMessageDialog(null, "Please enter a filename for the merged document.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
 		if(!outputName.endsWith(".docx"))
