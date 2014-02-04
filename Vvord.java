@@ -1,6 +1,7 @@
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipException;
 import java.util.Enumeration;
 import java.io.File;
 import java.io.FileWriter;
@@ -20,7 +21,7 @@ import java.util.Calendar;
 import javax.xml.stream.XMLStreamException;
 
 public class Vvord{
-	//TODO: grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better
+	//TODO: grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better, kill when cancel is selected, test a lot using molhado tool
 	
 	static JFrame frame;
 	static FileDialog browser;
@@ -31,7 +32,7 @@ public class Vvord{
 
 	public static void main(String[] args){
 		frame = new JFrame();
-		if(args.length != 0)
+		if(args.length > 0)
 			authorName = args[0];
 		
 		String base = getDocx("base");
@@ -350,9 +351,14 @@ public class Vvord{
 					}
 					
 					else if(entry.getName().startsWith("history")){
-						zos.putNextEntry(entry);
-						is = docxFile.getInputStream(entry);
-						writeEntry(entry, is, zos);
+						try{ //check to see if already exists in history
+							zos.putNextEntry(entry);
+							is = docxFile.getInputStream(entry);
+							writeEntry(entry, is, zos);
+						}
+						catch(ZipException e){
+							e.printStackTrace();
+						}
 					}
 					else if(entry.getName().equals("_rels/.rels")){
 						entry = new ZipEntry("_rels/.rels");
@@ -399,8 +405,13 @@ public class Vvord{
 				if(entry.getName().contains("[")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 				}
-				zos.putNextEntry(entry);
-				writeEntry(entry, is, zos);
+				try{
+					zos.putNextEntry(entry);
+					writeEntry(entry, is, zos);
+				}
+				catch(ZipException e){
+					e.printStackTrace();
+				}
 			}
 			
 			while(branch2enu.hasMoreElements()){
@@ -413,8 +424,13 @@ public class Vvord{
 				if(entry.getName().contains("[") || entry.getName().contains("]")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 				}
-				zos.putNextEntry(entry);
-				writeEntry(entry, is, zos);
+				try{
+					zos.putNextEntry(entry);
+					writeEntry(entry, is, zos);
+				}
+				catch(ZipException e){
+					e.printStackTrace();
+				}
 			}
 			
 			entry = new ZipEntry("history/revision-history.xml");
