@@ -472,18 +472,7 @@ public class Vvord{
 				entry = new ZipEntry(oldEntry.getName());
 				//zos.setMethod(oldEntry.getMethod());
 				is = branch1Docx.getInputStream(entry);
-				if(entry.getName().startsWith("history")){
-					try{ //check to see if already exists in history
-						zos.putNextEntry(entry);
-						is = docxFile.getInputStream(entry);
-						writeEntry(entry, is, zos);
-					}
-					catch(ZipException e){
-						e.printStackTrace();
-					}
-					
-				}
-				else
+				if(!entry.getName().startsWith("history"))
 					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
 				if(entry.getName().contains("[")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
@@ -502,18 +491,7 @@ public class Vvord{
 				entry = new ZipEntry(oldEntry.getName());
 				//zos.setMethod(oldEntry.getMethod());
 				is = branch2Docx.getInputStream(entry);
-				if(entry.getName().startsWith("history")){
-					try{ //check to see if already exists in history
-						zos.putNextEntry(entry);
-						is = docxFile.getInputStream(entry);
-						writeEntry(entry, is, zos);
-					}
-					catch(ZipException e){
-						e.printStackTrace();
-					}
-					
-				}
-				else
+				if(!entry.getName().startsWith("history"))
 					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName()+"~");
 				if(entry.getName().contains("[") || entry.getName().contains("]")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
