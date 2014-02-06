@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.lang.ClassNotFoundException;
 
 public class Vvord{
-	//TODO: grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better, kill when cancel is selected, test a lot using molhado tool
+	//TODO: PROPER PACKAGING, grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better, kill when cancel is selected, test a lot using molhado tool
 	// extractHistory from branch files if needed or else get rid of that method
 	
 	static JFrame frame;
@@ -447,7 +447,7 @@ public class Vvord{
 					else if(entry.getName().equals("[Content_Types].xml")){
 
 					}
-					else{
+					else{ //writes non-history and non-special files to the new docx
 						zos.putNextEntry(entry);
 						is = docxFile.getInputStream(entry);
 						writeEntry(entry, is, zos);
@@ -455,7 +455,7 @@ public class Vvord{
 
 					
 					
-					if(!entry.getName().startsWith("history")){
+					if(!entry.getName().startsWith("history")){ //writes non-history and non-special files to the new docx again, but as a history file of the original base document
 						is = docxFile.getInputStream(entry);
 						entry = new ZipEntry("history/"+baseId+"/"+entry.getName()+"~");
 						if(entry.getName().contains("[")){
