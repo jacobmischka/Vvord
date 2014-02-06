@@ -25,6 +25,7 @@ import java.lang.ClassNotFoundException;
 
 public class Vvord{
 	//TODO: grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better, kill when cancel is selected, test a lot using molhado tool
+	// extractHistory from branch files if needed or else get rid of that method
 	
 	static JFrame frame;
 	static FileDialog browser;
@@ -43,18 +44,18 @@ public class Vvord{
 		}
 		frame = new JFrame();		
 
-		String branch1 = getDocx("branch1");
+		String branch1 = getDocx("branch1"); //get branch1
 		if(branch1 == null){
 			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
-		String branch2 = getDocx("branch2");
+		String branch2 = getDocx("branch2"); //get branch2
 		if(branch2 == null){
 			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
 		
-		try{
+		try{ //extract branch1 files
 			extractXml(branch1, "branch1.xml", "word/document.xml");
 		}
 		catch(IOException e){
@@ -72,7 +73,7 @@ public class Vvord{
 			System.out.println("No revision-history.xml found in file " + branch1);
 		}
 			
-		try{
+		try{ //extract branch2 files
 			extractXml(branch2, "branch2.xml", "word/document.xml");
 		}
 		catch(IOException e){
@@ -92,7 +93,7 @@ public class Vvord{
 		
 		
 		
-		Revision baseRevision = findSharedBase("branch1RevisionHistory.xml", "branch2RevisionHistory.xml");
+		Revision baseRevision = findSharedBase("branch1RevisionHistory.xml", "branch2RevisionHistory.xml"); //attempts to find a base within the histories of the branches
 		baseLocation = "";
 		String base;
 		if(baseRevision == null){ //no shared base found
@@ -105,13 +106,13 @@ public class Vvord{
 			}	
 		}
 		else{ //shared base found
-			base = branch1;
+			base = branch1; //uses the xml files found in branch1's history
 			baseLocation = baseRevision.location;
 		}
 		
 		
 		
-		String outputName = JOptionPane.showInputDialog("Enter the filename for the merged document");
+		String outputName = JOptionPane.showInputDialog("Enter the filename for the merged document"); //get input for merged document's filename
 		if(outputName.trim().equals("") || outputName == null){
 			JOptionPane.showMessageDialog(null, "Please enter a filename for the merged document.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
@@ -119,15 +120,19 @@ public class Vvord{
 		if(!outputName.endsWith(".docx"))
 			outputName += ".docx";
 			
-		if(args.length > 0)
+		if(args.length > 0) //uses first argument as author name if specified
 			authorName = args[0];
 		else
-			authorName = JOptionPane.showInputDialog("Please enter an author name.");
+			authorName = JOptionPane.showInputDialog("Please enter an author name."); //if no arguments found, prompts user for author name
 			
-		if(authorName == null || authorName.trim().equals(""))
+		if(authorName == null || authorName.trim().equals("")) //if user does not enter author name, defaults to "Author Name" for now
 			authorName = "Author Name";
-		
-		String comments = JOptionPane.showInputDialog("Would you like to enter a comment for this merge?");
+			
+		String comments = "";
+		if(args.length > 1) //uses second argument as comments if specified
+			comments = args[1];
+		else
+			comments = JOptionPane.showInputDialog("Would you like to enter a comment for this merge?"); //if no arguments found, prompts user for comments
 		
 		
 		
@@ -154,7 +159,7 @@ public class Vvord{
 		
 		
 		String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
-		merge3dm(arguments);
+		merge3dm(arguments); //calls 3dm to merge
 		
 		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", comments);
 		createDocx(base, branch1, branch2, outputName);
@@ -165,6 +170,7 @@ public class Vvord{
 	}
 	
 	static String getDocx(String type){
+		//Presents file browser that prompts user for a .docx file
 		
 		FileDialog browser = new FileDialog(frame, "Select the " + type + " .docx file");
 		browser.setFilenameFilter(new DocxFilter());
@@ -179,6 +185,7 @@ public class Vvord{
 	}
 	
 	static File extractXml(String name, String outputName, String entryName) throws IOException{
+		//extracts an XML file "entryName" in the docx file "name" and writes it to XML file "outputName" in current directory as of now
 		
 			ZipFile docx = new ZipFile(name);
 			ZipEntry document = docx.getEntry(entryName);
@@ -197,6 +204,7 @@ public class Vvord{
 	}
 	
 	static void merge3dm(String[] args){
+		//calls 3DM TreeDiffMerge to merge the XML files specified in args
 		
 		try{
 			TreeDiffMerge.main(args);
@@ -207,6 +215,7 @@ public class Vvord{
 	}
 	
 	static void updateRevisionHistory(String revisionHistoryXml, String base, String branch1, String branch2, String comments){
+		//Creates an XML revision history file revisionHistoryXml that documents the 
 		
 		RevisionHistory revisionHistory = new RevisionHistory();
 		String id = UUID.randomUUID().toString();
@@ -377,6 +386,7 @@ public class Vvord{
 	
 	
 	static void createDocx(String base, String branch1, String branch2, String outputFile){
+		//creates the new docx file 
 		try{
 			ZipFile docxFile = new ZipFile(base);
 			ZipFile branch1Docx = new ZipFile(branch1);
@@ -462,7 +472,18 @@ public class Vvord{
 				entry = new ZipEntry(oldEntry.getName());
 				//zos.setMethod(oldEntry.getMethod());
 				is = branch1Docx.getInputStream(entry);
-				if(!entry.getName().startsWith("history"))
+				if(entry.getName().startsWith("history")){
+					try{ //check to see if already exists in history
+						zos.putNextEntry(entry);
+						is = docxFile.getInputStream(entry);
+						writeEntry(entry, is, zos);
+					}
+					catch(ZipException e){
+						e.printStackTrace();
+					}
+					
+				}
+				else
 					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
 				if(entry.getName().contains("[")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
@@ -481,7 +502,18 @@ public class Vvord{
 				entry = new ZipEntry(oldEntry.getName());
 				//zos.setMethod(oldEntry.getMethod());
 				is = branch2Docx.getInputStream(entry);
-				if(!entry.getName().startsWith("history"))
+				if(entry.getName().startsWith("history")){
+					try{ //check to see if already exists in history
+						zos.putNextEntry(entry);
+						is = docxFile.getInputStream(entry);
+						writeEntry(entry, is, zos);
+					}
+					catch(ZipException e){
+						e.printStackTrace();
+					}
+					
+				}
+				else
 					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName()+"~");
 				if(entry.getName().contains("[") || entry.getName().contains("]")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
