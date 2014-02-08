@@ -34,6 +34,7 @@ public class Vvord{
 	static RevisionMetadata contentTypes;
 	static String authorName;
 	static String baseLocation;
+	static File baseRevisionHistoryXml, branch1RevisionHistoryXml, branch2RevisionHistoryXml, baseXml, branch1Xml, branch2Xml, documentXml, revisionHistoryXml;
 
 	public static void main(String[] args){
 		try{
@@ -56,7 +57,7 @@ public class Vvord{
 		}
 		
 		try{ //extract branch1 files
-			extractXml(branch1, "branch1.xml", "word/document.xml");
+			branch1Xml = extractXml(branch1, "branch1", "word/document.xml");
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + branch1);
@@ -64,7 +65,7 @@ public class Vvord{
 			System.exit(1);		
 		}
 		try{
-			extractXml(branch1, "branch1RevisionHistory.xml", "history/revision-history.xml");
+			branch1RevisionHistoryXml = extractXml(branch1, "branch1RevisionHistory", "history/revision-history.xml");
 		}
 		catch(IOException e){
 			System.out.println("No revision-history.xml found in file " + branch1);
@@ -74,7 +75,7 @@ public class Vvord{
 		}
 			
 		try{ //extract branch2 files
-			extractXml(branch2, "branch2.xml", "word/document.xml");
+			branch2Xml = extractXml(branch2, "branch2", "word/document.xml");
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + branch2);
@@ -82,7 +83,7 @@ public class Vvord{
 			System.exit(1);		
 		}
 		try{
-			extractXml(branch2, "branch2RevisionHistory.xml", "history/revision-history.xml");
+			branch2RevisionHistoryXml = extractXml(branch2, "branch2RevisionHistory", "history/revision-history.xml");
 		}
 		catch(IOException e){
 			System.out.println("No revision-history.xml found in file " + branch2);
@@ -91,9 +92,9 @@ public class Vvord{
 			System.out.println("No revision-history.xml found in file " + branch2);
 		}
 		
-		
-		
-		Revision baseRevision = findSharedBase("branch1RevisionHistory.xml", "branch2RevisionHistory.xml"); //attempts to find a base within the histories of the branches
+		Revision baseRevision = null;
+		if(branch1RevisionHistoryXml != null && branch2RevisionHistoryXml != null)
+			baseRevision = findSharedBase(branch1RevisionHistoryXml.toString(), branch2RevisionHistoryXml.toString()); //attempts to find a base within the histories of the branches
 		baseLocation = "";
 		String base;
 		if(baseRevision == null){ //no shared base found
@@ -139,7 +140,7 @@ public class Vvord{
 		startTime = System.currentTimeMillis();
 		
 		try{
-			extractXml(base, "base.xml", baseLocation+"word/document.xml");
+			baseXml = extractXml(base, "base", baseLocation+"word/document.xml");
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + base);
@@ -147,7 +148,7 @@ public class Vvord{
 			System.exit(1);
 		}
 		try{
-			extractXml(base, "baseRevisionHistory.xml", baseLocation+"history/revision-history.xml");
+			baseRevisionHistoryXml = extractXml(base, "baseRevisionHistory", baseLocation+"history/revision-history.xml");
 		}
 		catch(IOException e){
 			System.out.println("No revision-history.xml found in file " + base);
@@ -156,12 +157,26 @@ public class Vvord{
 			System.out.println("No revision-history.xml found in file " + base);
 		}
 		
+		try{
+			documentXml = File.createTempFile("document", ".xml");
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
 		
-		
-		String[] arguments = {"-m", "base.xml", "branch1.xml", "branch2.xml", "document.xml"};
+		String[] arguments = {"-m", baseXml.toString(), branch1Xml.toString(), branch2Xml.toString(), documentXml.toString()}; 
 		merge3dm(arguments); //calls 3dm to merge
 		
-		updateRevisionHistory("revision-history.xml", "baseRevisionHistory.xml", "branch1RevisionHistory.xml", "branch2RevisionHistory.xml", comments);
+		try{
+			revisionHistoryXml = File.createTempFile("revision-history", ".xml");
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		updateRevisionHistory(revisionHistoryXml, baseRevisionHistoryXml, branch1RevisionHistoryXml, branch2RevisionHistoryXml, comments);
 		createDocx(base, branch1, branch2, outputName);
 		endTime = System.currentTimeMillis();
 		System.out.println("Completion time: " + ((endTime-startTime)/1000.0) + " seconds.");
@@ -189,7 +204,8 @@ public class Vvord{
 		
 			ZipFile docx = new ZipFile(name);
 			ZipEntry document = docx.getEntry(entryName);
-			File file = new File(outputName);
+			//File file = new File(outputName);
+			File file = File.createTempFile(outputName, ".xml");
 			
 			InputStream is = docx.getInputStream(document);
 			FileOutputStream fos = new FileOutputStream(file);
@@ -214,7 +230,7 @@ public class Vvord{
 		}
 	}
 	
-	static void updateRevisionHistory(String revisionHistoryXml, String base, String branch1, String branch2, String comments){
+	static void updateRevisionHistory(File revisionHistoryXml, File base, File branch1, File branch2, String comments){
 		//Creates an XML revision history file revisionHistoryXml that documents the 
 		
 		RevisionHistory revisionHistory = new RevisionHistory();
@@ -240,9 +256,9 @@ public class Vvord{
 		
 		try{	
 			RevisionHistory baseRevisionHistory = new RevisionHistory();
-			baseRevisionHistory.readXML(base);
+			baseRevisionHistory.readXML(base.toString());
 			baseId = baseRevisionHistory.current;
-			baseRevisionHistory.writeXML("testBaseRevisionHistory.xml");
+			//baseRevisionHistory.writeXML("testBaseRevisionHistory.xml");
 			
 			for(int i = 0; i < baseRevisionHistory.revisions.size(); i++){
 				if(!revisionHistory.revisions.contains(baseRevisionHistory.revisions.get(i))){
@@ -257,13 +273,17 @@ public class Vvord{
 		catch(XMLStreamException e){
 			e.printStackTrace();
 		}
+		catch(NullPointerException e){
+			System.err.println("Existing revision-history.xml file not found in file " + base);
+			baseId = UUID.randomUUID().toString();
+		}
 		
 		currentRevision.parents.add(baseId);
 		
 		
 		try{
 			RevisionHistory branch1RevisionHistory = new RevisionHistory();
-			branch1RevisionHistory.readXML(branch1);
+			branch1RevisionHistory.readXML(branch1.toString());
 			branch1Id = branch1RevisionHistory.current;
 			for(int i = 0; i < branch1RevisionHistory.revisions.size(); i++){
 				if(!revisionHistory.revisions.contains(branch1RevisionHistory.revisions.get(i))){
@@ -278,6 +298,10 @@ public class Vvord{
 		catch(XMLStreamException e){
 			e.printStackTrace();
 		}
+		catch(NullPointerException e){
+			System.err.println("Existing revision-history.xml file not found in file " + branch1);
+			branch1Id = UUID.randomUUID().toString();
+		}
 		
 		currentRevision.parents.add(branch1Id);
 		
@@ -285,7 +309,7 @@ public class Vvord{
 		
 		try{
 			RevisionHistory branch2RevisionHistory = new RevisionHistory();
-			branch2RevisionHistory.readXML(branch2);
+			branch2RevisionHistory.readXML(branch2.toString());
 			branch2Id = branch2RevisionHistory.current;
 			for(int i = 0; i < branch2RevisionHistory.revisions.size(); i++){
 				if(!revisionHistory.revisions.contains(branch2RevisionHistory.revisions.get(i))){
@@ -300,6 +324,10 @@ public class Vvord{
 		catch(XMLStreamException e){
 			e.printStackTrace();
 		}
+		catch(NullPointerException e){
+			System.err.println("Existing revision-history.xml file not found in file " + branch2);
+			branch2Id = UUID.randomUUID().toString();
+		}
 		
 		currentRevision.parents.add(branch2Id);
 		
@@ -308,12 +336,15 @@ public class Vvord{
 		revisionHistory.current = id;
 		
 		try{
-			revisionHistory.writeXML(revisionHistoryXml);
+			revisionHistory.writeXML(revisionHistoryXml.toString());
 		}
 		catch(FileNotFoundException e){
 			e.printStackTrace();
 		}
 		catch(XMLStreamException e){
+			e.printStackTrace();
+		}
+		catch(NullPointerException e){
 			e.printStackTrace();
 		}
 	}
@@ -418,7 +449,7 @@ public class Vvord{
 					
 					if(entry.getName().equals("word/document.xml")){
 						zos.putNextEntry(new ZipEntry(entry.getName()));
-						is = new FileInputStream("document.xml"); 
+						is = new FileInputStream(documentXml); 
 						writeEntry(entry, is, zos);
 					}
 					
@@ -439,8 +470,9 @@ public class Vvord{
 						rels.addRelationship("rId2", RevisionMetadata.CORE_TYPE, "docProps/core.xml");
 						rels.addRelationship("rId1", RevisionMetadata.DOCUMENT_TYPE, "word/document.xml");
 						rels.addRelationship("revisionHistory", RevisionMetadata.REVISION_HISTORY_TYPE, "history/revision-history.xml");
-						rels.writeRels(".rels");
-						is = new FileInputStream(".rels");
+						File relsFile = File.createTempFile("rels", ".rels");
+						rels.writeRels(relsFile.toString());
+						is = new FileInputStream(relsFile);
 						zos.putNextEntry(entry);
 						writeEntry(entry, is, zos);
 					}
@@ -506,20 +538,22 @@ public class Vvord{
 			}
 			
 			entry = new ZipEntry("history/revision-history.xml");
-			is = new FileInputStream("revision-history.xml");
+			is = new FileInputStream(revisionHistoryXml);
 			zos.putNextEntry(entry);
 			writeEntry(entry, is, zos);
 			
 			entry = new ZipEntry("history/_rels/revision-history.xml.rels");
 			zos.putNextEntry(entry);
-			contentTypes.writeRels("revision-history.xml.rels");
-			is = new FileInputStream("revision-history.xml.rels");
+			File revisionHistoryXmlRels = File.createTempFile("revision-history-xml", ".rels");
+			contentTypes.writeRels(revisionHistoryXmlRels.toString());
+			is = new FileInputStream(revisionHistoryXmlRels);
 			writeEntry(entry, is, zos);
 			
 			entry = new ZipEntry("[Content_Types].xml");
 			zos.putNextEntry(entry);
-			contentTypes.writeContentTypes("content_types.xml");
-			is = new FileInputStream("content_types.xml");
+			File contentTypesFile = File.createTempFile("content_types", ".xml");
+			contentTypes.writeContentTypes(contentTypesFile.toString());
+			is = new FileInputStream(contentTypesFile);
 			writeEntry(entry, is, zos);
 			
 			zos.close();
