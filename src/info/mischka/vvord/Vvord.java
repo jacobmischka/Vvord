@@ -50,12 +50,12 @@ public class Vvord{
 		String branch1 = getDocx("branch1"); //get branch1
 		if(branch1 == null){
 			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
-			System.exit(0);
+			System.exit(1);
 		}
 		String branch2 = getDocx("branch2"); //get branch2
 		if(branch2 == null){
 			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
-			System.exit(0);
+			System.exit(1);
 		}
 		
 		try{ //extract branch1 files
@@ -105,7 +105,7 @@ public class Vvord{
 			base = getDocx("base");
 			if(base == null){
 				JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
-				System.exit(0);
+				System.exit(1);
 			}	
 		}
 		else{ //shared base found
@@ -118,7 +118,7 @@ public class Vvord{
 		String outputName = JOptionPane.showInputDialog("Enter the filename for the merged document"); //get input for merged document's filename
 		if(outputName.trim().equals("") || outputName == null){
 			JOptionPane.showMessageDialog(null, "Please enter a filename for the merged document.", "Error", JOptionPane.ERROR_MESSAGE);
-			System.exit(0);
+			System.exit(1);
 		}
 		if(!outputName.endsWith(".docx"))
 			outputName += ".docx";
