@@ -8,6 +8,8 @@ When running Vvord, the 3dm JAR must also be in the classpath, as well as its de
 
 A compiled JAR, as well as a zip file containing the required libraries can be found on my website at http://www.mischka.info/Vvord/. The JAR is set so that the libs/ directory must be in the same directory as the JAR, not the dependency JARs themselves.
 
+The tool saves several files per merge operation into the machine's temporary directory, so Windows users may want to be aware of that fact. 
+
 The tool intended for use via the molhado-word Word plugin to merge .docx files and their histories.
 
 The tool is distributed under the GPLv3 license (http://www.gnu.org/licenses/gpl.txt), Copyright 2013 Jacob Mischka
