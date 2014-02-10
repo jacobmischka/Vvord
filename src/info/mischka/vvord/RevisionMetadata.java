@@ -55,7 +55,7 @@ class RevisionMetadata{
 	}
 	*/
 	
-	void writeContentTypes(String file) throws FileNotFoundException, XMLStreamException{
+	void writeContentTypes(String file) throws FileNotFoundException, XMLStreamException{ //use xmlstreamwriter
 		defaults.add(new Default("rels", CONTENT_TYPES[RELS]));
 		defaults.add(new Default("xml", CONTENT_TYPES[CONTENT_TYPE]));
 		defaults.add(new Default("xml~", CONTENT_TYPES[STYLES]));
@@ -68,7 +68,7 @@ class RevisionMetadata{
 		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
 		XMLEvent endln = eventFactory.createDTD("\n");
 		
-		eventWriter.add(eventFactory.createStartDocument());
+		eventWriter.add(eventFactory.createStartDocument("UTF-8", "1.0", true));
 		eventWriter.add(endln);
 		
 		eventWriter.add(eventFactory.createStartElement("", "", "Types"));

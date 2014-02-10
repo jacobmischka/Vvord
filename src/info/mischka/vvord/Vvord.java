@@ -110,7 +110,7 @@ public class Vvord{
 		}
 		else{ //shared base found
 			base = branch1; //uses the xml files found in branch1's history
-			baseLocation = baseRevision.location;
+			baseLocation = baseRevision.location+"/";
 		}
 		
 		
@@ -142,7 +142,9 @@ public class Vvord{
 		startTime = System.currentTimeMillis();
 		
 		try{
+			System.out.println(base + ", " + baseLocation+"word/document.xml");
 			baseXml = extractXml(base, "base", baseLocation+"word/document.xml");
+			
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + base);
