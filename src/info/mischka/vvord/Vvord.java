@@ -32,7 +32,7 @@ public class Vvord{
 	static JFrame frame;
 	static FileDialog browser;
 	static long startTime, endTime;
-	static String docxId, baseId, branch1Id, branch2Id;
+	static String currentId, baseId, branch1Id, branch2Id;
 	static RevisionMetadata contentTypes;
 	static String authorName;
 	static String baseLocation;
@@ -250,6 +250,8 @@ public class Vvord{
 			e.printStackTrace();
 			computerName = "Unknown";
 		}
+		
+		currentId = currentRevision.id;
 		
 		currentRevision.author = authorName+"@"+computerName;
 		currentRevision.location = "/history/"+currentRevision.id; 
@@ -492,6 +494,7 @@ public class Vvord{
 					
 					
 					if(!entry.getName().startsWith("history")){ //writes non-history and non-special files to the new docx again, but as a history file of the original base document
+						ZipEntry originalEntry = entry;
 						is = docxFile.getInputStream(entry);
 						entry = new ZipEntry("history/"+baseId+"/"+entry.getName()+"~");
 						if(entry.getName().contains("[")){
@@ -499,7 +502,16 @@ public class Vvord{
 						}
 						zos.putNextEntry(entry);
 						writeEntry(entry, is, zos);
+						
+						is = docxFile.getInputStream(originalEntry);
+						entry = new ZipEntry("history/"+currentId+"/"+originalEntry.getName()+"~");
+						if(entry.getName().contains("[")){
+							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
+						}
+						zos.putNextEntry(entry);
+						writeEntry(entry, is, zos);
 					}
+					
 				}
 			}
 

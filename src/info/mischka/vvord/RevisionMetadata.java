@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.events.StartElement;
@@ -64,37 +64,36 @@ class RevisionMetadata{
 		FileOutputStream fos = new FileOutputStream(file);
 		
 		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-		XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(fos);
 		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
 		XMLEvent endln = eventFactory.createDTD("\n");
 		
-		eventWriter.add(eventFactory.createStartDocument("UTF-8", "1.0", true));
-		eventWriter.add(endln);
+		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos);
 		
-		eventWriter.add(eventFactory.createStartElement("", "", "Types"));
-		eventWriter.add(eventFactory.createAttribute("xmlns", "http://schemas.openxmlformats.org/package/2006/content-types"));
-		eventWriter.add(endln);
+		writer.writeStartDocument("UTF-8", "1.0");
+		writer.writeDTD("\n");
+		
+		writer.writeStartElement("Types");
+		writer.writeAttribute("xmlns", "http://schemas.openxmlformats.org/package/2006/content-types");
+		writer.writeDTD("\n");
 		
 		for(Default d:defaults){
-			eventWriter.add(eventFactory.createStartElement("", "", "Default"));
-			eventWriter.add(eventFactory.createAttribute("Extension", d.extension));
-			eventWriter.add(eventFactory.createAttribute("ContentType", d.contentType));
-			eventWriter.add(eventFactory.createEndElement("", "", "Default"));
-			eventWriter.add(endln);
+			writer.writeEmptyElement("Default");
+			writer.writeAttribute("Extension", d.extension);
+			writer.writeAttribute("ContentType", d.contentType);
+			writer.writeDTD("\n");
 		}
 		
 		for(Override o:overrides){
-			eventWriter.add(eventFactory.createStartElement("", "", "Override"));
-			eventWriter.add(eventFactory.createAttribute("PartName", o.partName));
-			eventWriter.add(eventFactory.createAttribute("ContentType", o.contentType));
-			eventWriter.add(eventFactory.createEndElement("", "", "Override"));
-			eventWriter.add(endln);
+			writer.writeEmptyElement("Override");
+			writer.writeAttribute("PartName", o.partName);
+			writer.writeAttribute("ContentType", o.contentType);
+			writer.writeDTD("\n");
 			
 		}
-		eventWriter.add(eventFactory.createEndElement("", "", "Types"));
-		eventWriter.add(endln);
-		eventWriter.add(eventFactory.createEndDocument());
-		eventWriter.close();
+		writer.writeEndElement();
+		writer.writeDTD("\n");
+		writer.writeEndDocument();
+		writer.close();
 	}
 	
 	void addOverride(String partName){
@@ -129,29 +128,29 @@ class RevisionMetadata{
 		FileOutputStream fos = new FileOutputStream(file);
 		
 		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-		XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(fos);
 		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
 		XMLEvent endln = eventFactory.createDTD("\n");
 		
-		eventWriter.add(eventFactory.createStartDocument());
-		eventWriter.add(endln);
+		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos);
 		
-		eventWriter.add(eventFactory.createStartElement("", "", "Relationships"));
-		eventWriter.add(eventFactory.createAttribute("xmlns", "http://schemas.openxmlformats.org/package/2006/relationships"));
-		eventWriter.add(endln);
+		writer.writeStartDocument();
+		writer.writeDTD("\n");
+		
+		writer.writeStartElement("Relationships");
+		writer.writeAttribute("xmlns", "http://schemas.openxmlformats.org/package/2006/relationships");
+		writer.writeDTD("\n");
 		
 		for(Relationship r:relationships){
-			eventWriter.add(eventFactory.createStartElement("", "", "Relationship"));
-			eventWriter.add(eventFactory.createAttribute("Id", r.id));
-			eventWriter.add(eventFactory.createAttribute("Type", r.type));
-			eventWriter.add(eventFactory.createAttribute("Target", r.target));
-			eventWriter.add(eventFactory.createEndElement("", "", "Relationship"));
-			eventWriter.add(endln);
+			writer.writeEmptyElement("Relationship");
+			writer.writeAttribute("Id", r.id);
+			writer.writeAttribute("Type", r.type);
+			writer.writeAttribute("Target", r.target);
+			writer.writeDTD("\n");
 		}
-		eventWriter.add(eventFactory.createEndElement("", "", "Relationships"));
-		eventWriter.add(endln);
-		eventWriter.add(eventFactory.createEndDocument());
-		eventWriter.close();
+		writer.writeEndElement();
+		writer.writeDTD("\n");
+		writer.writeEndDocument();
+		writer.close();
 		
 		
 	}

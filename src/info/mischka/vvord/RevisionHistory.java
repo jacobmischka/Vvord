@@ -6,7 +6,7 @@ import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.events.StartElement;
@@ -97,47 +97,46 @@ class RevisionHistory{
 		FileOutputStream fos = new FileOutputStream(file);
 		
 		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-		XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(fos);
 		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
 		XMLEvent endln = eventFactory.createDTD("\n");
+		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos);
 		
-		eventWriter.add(eventFactory.createStartDocument());
-		eventWriter.add(endln);
+		writer.writeStartDocument();
+		writer.writeDTD("\n");
 		
-		eventWriter.add(eventFactory.createStartElement("", "", "revision-history")); //add attributes
-		eventWriter.add(eventFactory.createAttribute("current", current));
-		eventWriter.add(eventFactory.createAttribute("xmlns", "http://www.cs.uwm.edu/molhado/revision-history"));
-		eventWriter.add(endln);
+		writer.writeStartElement("revision-history");
+		writer.writeAttribute("current", current);
+		writer.writeAttribute("xmlns", "http://www.cs.uwm.edu/molhado/revision-history");
+		writer.writeDTD("\n");
 		
 		for(Revision r:revisions){
-			eventWriter.add(eventFactory.createStartElement("", "", "revision")); //add attributes
-			eventWriter.add(eventFactory.createAttribute("id", r.id));
-			eventWriter.add(eventFactory.createAttribute("author", r.author));
-			eventWriter.add(eventFactory.createAttribute("timestamp", r.timestamp));
-			eventWriter.add(eventFactory.createAttribute("location", r.location));
-			eventWriter.add(endln);
+			writer.writeStartElement("revision"); //add attributes
+			writer.writeAttribute("id", r.id);
+			writer.writeAttribute("author", r.author);
+			writer.writeAttribute("timestamp", r.timestamp);
+			writer.writeAttribute("location", r.location);
+			writer.writeDTD("\n");
 			
 			for(String p:r.parents){
-				eventWriter.add(eventFactory.createStartElement("", "", "parent")); //add attributes
+				writer.writeEmptyElement("parent"); //add attributes
 				
-				eventWriter.add(eventFactory.createAttribute("id", p));
-				eventWriter.add(eventFactory.createEndElement("", "", "parent"));
-				eventWriter.add(endln);
+				writer.writeAttribute("id", p);;
+				writer.writeDTD("\n");
 			}
 			
-			eventWriter.add(eventFactory.createStartElement("", "", "comments"));
-			eventWriter.add(eventFactory.createCharacters(r.comments));
-			eventWriter.add(eventFactory.createEndElement("", "", "comments"));
-			eventWriter.add(endln);
-			eventWriter.add(eventFactory.createEndElement("", "", "revision"));
-			eventWriter.add(endln);
+			writer.writeStartElement("comments");
+			writer.writeCharacters(r.comments);
+			writer.writeEndElement();
+			writer.writeDTD("\n");
+			writer.writeEndElement();
+			writer.writeDTD("\n");
 		}
 		
-		eventWriter.add(eventFactory.createEndElement("", "", "revision-history"));
-		eventWriter.add(endln);
+		writer.writeEndElement();
+		writer.writeDTD("\n");
 		
-		eventWriter.add(eventFactory.createEndDocument());
-		eventWriter.close();
+		writer.writeEndDocument();
+		writer.close();
 	}
 	
 	Revision getRevision(String id){
