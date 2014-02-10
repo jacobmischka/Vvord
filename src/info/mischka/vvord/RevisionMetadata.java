@@ -36,6 +36,8 @@ class RevisionMetadata{
 	
 	ArrayList<Override> overrides = new ArrayList<Override>();
 	ArrayList<Relationship> relationships = new ArrayList<Relationship>();
+	ArrayList<Default> defaults = new ArrayList<Default>();
+	
 	/*
 	void readContentTypes(String file){
 		InputStream is = new FileInputStream(file);
@@ -54,6 +56,11 @@ class RevisionMetadata{
 	*/
 	
 	void writeContentTypes(String file) throws FileNotFoundException, XMLStreamException{
+		defaults.add(new Default("rels", CONTENT_TYPES[RELS]));
+		defaults.add(new Default("xml", CONTENT_TYPES[CONTENT_TYPE]));
+		defaults.add(new Default("xml~", CONTENT_TYPES[STYLES]));
+		defaults.add(new Default("rels~", CONTENT_TYPES[RELS]));
+		
 		FileOutputStream fos = new FileOutputStream(file);
 		
 		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
@@ -67,6 +74,14 @@ class RevisionMetadata{
 		eventWriter.add(eventFactory.createStartElement("", "", "Types"));
 		eventWriter.add(eventFactory.createAttribute("xmlns", "http://schemas.openxmlformats.org/package/2006/content-types"));
 		eventWriter.add(endln);
+		
+		for(Default d:defaults){
+			eventWriter.add(eventFactory.createStartElement("", "", "Default"));
+			eventWriter.add(eventFactory.createAttribute("Extension", d.extension));
+			eventWriter.add(eventFactory.createAttribute("ContentType", d.contentType));
+			eventWriter.add(eventFactory.createEndElement("", "", "Default"));
+			eventWriter.add(endln);
+		}
 		
 		for(Override o:overrides){
 			eventWriter.add(eventFactory.createStartElement("", "", "Override"));
@@ -172,5 +187,14 @@ class Relationship{
 		this.id = id;
 		this.type = type;
 		this.target = target;
+	}
+}
+
+class Default{
+	String extension, contentType;
+	
+	public Default(String extension, String contentType){
+		this.extension = extension;
+		this.contentType = contentType;
 	}
 }
