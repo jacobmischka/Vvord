@@ -98,7 +98,6 @@ class RevisionHistory{
 		
 		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
-		XMLEvent endln = eventFactory.createDTD("\n");
 		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos);
 		
 		writer.writeStartDocument();
