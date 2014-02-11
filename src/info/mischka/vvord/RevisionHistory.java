@@ -100,7 +100,7 @@ class RevisionHistory{
 		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
 		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos);
 		
-		writer.writeStartDocument();
+		writer.writeStartDocument("UTF-8", "1.0");
 		writer.writeDTD("\n");
 		
 		writer.writeStartElement("revision-history");

@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.lang.ClassNotFoundException;
 
 public class Vvord{
-	//TODO: PROPER PACKAGING, grab base from history if existing, try to get working on osx, get rid of temp files or put them somewhere better, kill when cancel is selected, test a lot using molhado tool
+	//TODO: try to get working on osx, test a lot using molhado tool, get actually working in Word
 	// extractHistory from branch files if needed or else get rid of that method
 	
 	static JFrame frame;
@@ -352,56 +352,6 @@ public class Vvord{
 			e.printStackTrace();
 		}
 		catch(NullPointerException e){
-			e.printStackTrace();
-		}
-	}
-	
-	static void extractHistory(String docxName, String outputName, String historyName){
-		try{
-			ZipFile docx = new ZipFile(docxName);
-			ZipEntry entry;
-			Enumeration<?> enu = docx.entries();
-			InputStream is;
-			File revisionFolder = new File(outputName);
-			File revisionHistory = new File(historyName);
-			FileOutputStream fos;
-			byte[] buffer = new byte[1024];
-			int length;
-			
-			while(enu.hasMoreElements()){
-				ZipEntry oldEntry = (ZipEntry)enu.nextElement();
-				entry = new ZipEntry(oldEntry.getName());
-				is = docx.getInputStream(entry);
-				String name = entry.getName();
-				File file = new File(name);
-				if(name.endsWith("/"))
-					file.mkdirs();
-				
-				File parent = file.getParentFile();
-				if(parent != null){
-					parent.mkdirs();
-				}
-				
-				if(entry.getName().startsWith("history")){
-					fos = new FileOutputStream(docxName.substring(0, docxName.indexOf("."))+file.getPath()+"history");
-					
-				}
-				else{
-					fos = new FileOutputStream(docxName.substring(0, docxName.indexOf("."))+file.getPath());
-				}
-
-				while((length = is.read(buffer)) >= 0){
-					fos.write(buffer, 0, length);
-				}
-				is.close();
-				fos.close();
-			}
-			
-		}
-		catch(FileNotFoundException e){
-			e.printStackTrace();
-		}
-		catch(IOException e){
 			e.printStackTrace();
 		}
 	}
