@@ -65,7 +65,7 @@ class RevisionMetadata{
 		
 		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
-		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos);
+		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos, "UTF-8");
 		
 		writer.writeStartDocument("UTF-8", "1.0");
 		writer.writeDTD("\n");
@@ -127,7 +127,7 @@ class RevisionMetadata{
 		
 		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
-		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos);
+		XMLStreamWriter writer = outputFactory.createXMLStreamWriter(fos, "UTF-8");
 		
 		writer.writeStartDocument("UTF-8", "1.0");
 		writer.writeDTD("\n");

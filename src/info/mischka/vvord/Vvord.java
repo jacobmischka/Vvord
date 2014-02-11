@@ -111,7 +111,7 @@ public class Vvord{
 		}
 		else{ //shared base found
 			base = branch1; //uses the xml files found in branch1's history
-			baseLocation = baseRevision.location+"/"; //problem is lack of ~
+			baseLocation = baseRevision.location.substring(1)+"/"; //problem is lack of ~
 			baseSuffix = "~";
 		}
 		
@@ -144,6 +144,7 @@ public class Vvord{
 		startTime = System.currentTimeMillis();
 		
 		try{
+			System.out.println(base + ", " + baseLocation+"word/document.xml"+baseSuffix);
 			baseXml = extractXml(base, "base", baseLocation+"word/document.xml"+baseSuffix);
 			
 		}
@@ -390,12 +391,12 @@ public class Vvord{
 			
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile));
 			
-			while(enu.hasMoreElements()){
+			while(enu.hasMoreElements()){ //need to account for baseLocatoin and baseSuffix in all of this
 				
 				oldEntry = (ZipEntry)enu.nextElement();
 				String entryName = oldEntry.getName();
 				if(baseLocation != "")
-					entryName = entryName.replace(baseLocation, "");
+					entryName = baseLocation+entryName+baseSuffix;
 					
 				entry = new ZipEntry(entryName);
 				
@@ -404,13 +405,13 @@ public class Vvord{
 					
 					//zos.setMethod(oldEntry.getMethod());
 					
-					if(entry.getName().equals("word/document.xml")){
+					if(entry.getName().equals(baseLocation+"word/document.xml"+baseSuffix)){ 
 						zos.putNextEntry(new ZipEntry(entry.getName()));
 						is = new FileInputStream(documentXml); 
 						writeEntry(entry, is, zos);
 					}
 					
-					else if(entry.getName().startsWith("history")){
+					else if(entry.getName().startsWith(baseLocation+"history")){
 						try{ //check to see if already exists in history
 							zos.putNextEntry(entry);
 							is = docxFile.getInputStream(entry);
@@ -420,7 +421,7 @@ public class Vvord{
 							e.printStackTrace();
 						}
 					}
-					else if(entry.getName().equals("_rels/.rels")){
+					else if(entry.getName().equals(baseLocation+"_rels/.rels"+baseSuffix)){
 						entry = new ZipEntry("_rels/.rels");
 						RevisionMetadata rels = new RevisionMetadata();
 						rels.addRelationship("rId3", RevisionMetadata.APP_TYPE, "docProps/app.xml");
@@ -433,7 +434,7 @@ public class Vvord{
 						zos.putNextEntry(entry);
 						writeEntry(entry, is, zos);
 					}
-					else if(entry.getName().equals("[Content_Types].xml")){
+					else if(entry.getName().equals(baseLocation+"[Content_Types].xml"+baseSuffix)){
 
 					}
 					else{ //writes non-history and non-special files to the new docx
