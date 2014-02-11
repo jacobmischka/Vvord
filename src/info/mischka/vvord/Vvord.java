@@ -395,8 +395,10 @@ public class Vvord{
 				
 				oldEntry = (ZipEntry)enu.nextElement();
 				String entryName = oldEntry.getName();
-				if(baseLocation != "")
-					entryName = baseLocation+entryName+baseSuffix;
+				if(baseLocation != "" && baseSuffix != ""){
+					entryName.replace(baseLocation, "");
+					entryName.replace(baseSuffix, "");
+				}
 					
 				entry = new ZipEntry(entryName);
 				
@@ -405,23 +407,23 @@ public class Vvord{
 					
 					//zos.setMethod(oldEntry.getMethod());
 					
-					if(entry.getName().equals(baseLocation+"word/document.xml"+baseSuffix)){ 
+					if(entry.getName().equals("word/document.xml")){ 
 						zos.putNextEntry(new ZipEntry(entry.getName()));
 						is = new FileInputStream(documentXml); 
 						writeEntry(entry, is, zos);
 					}
 					
-					else if(entry.getName().startsWith(baseLocation+"history")){
+					else if(entry.getName().startsWith("history")){
 						try{ //check to see if already exists in history
 							zos.putNextEntry(entry);
-							is = docxFile.getInputStream(entry);
+							is = docxFile.getInputStream(oldEntry);
 							writeEntry(entry, is, zos);
 						}
 						catch(ZipException e){
 							e.printStackTrace();
 						}
 					}
-					else if(entry.getName().equals(baseLocation+"_rels/.rels"+baseSuffix)){
+					else if(entry.getName().equals("_rels/.rels")){
 						entry = new ZipEntry("_rels/.rels");
 						RevisionMetadata rels = new RevisionMetadata();
 						rels.addRelationship("rId3", RevisionMetadata.APP_TYPE, "docProps/app.xml");
@@ -434,12 +436,12 @@ public class Vvord{
 						zos.putNextEntry(entry);
 						writeEntry(entry, is, zos);
 					}
-					else if(entry.getName().equals(baseLocation+"[Content_Types].xml"+baseSuffix)){
+					else if(entry.getName().equals("[Content_Types].xml") || entry.getName().equals("%5BContent_Types%5D.xml")){
 
 					}
 					else{ //writes non-history and non-special files to the new docx
 						zos.putNextEntry(entry);
-						is = docxFile.getInputStream(entry);
+						is = docxFile.getInputStream(oldEntry);
 						writeEntry(entry, is, zos);
 					}
 
@@ -447,7 +449,7 @@ public class Vvord{
 					
 					if(!entry.getName().startsWith("history")){ //writes non-history and non-special files to the new docx again, but as a history file of the original base document
 						ZipEntry originalEntry = entry;
-						is = docxFile.getInputStream(entry);
+						is = docxFile.getInputStream(oldEntry);
 						entry = new ZipEntry("history/"+baseId+"/"+entry.getName()+"~");
 						if(entry.getName().contains("[")){
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
@@ -474,7 +476,7 @@ public class Vvord{
 				is = branch1Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history"))
 					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
-				if(entry.getName().contains("[")){
+				if(entry.getName().contains("[") || entry.getName().contains("]")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 				}
 				try{
