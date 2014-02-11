@@ -35,7 +35,7 @@ public class Vvord{
 	static String currentId, baseId, branch1Id, branch2Id;
 	static RevisionMetadata contentTypes;
 	static String authorName;
-	static String baseLocation;
+	static String baseLocation, baseSuffix;
 	static File baseRevisionHistoryXml, branch1RevisionHistoryXml, branch2RevisionHistoryXml, baseXml, branch1Xml, branch2Xml, documentXml, revisionHistoryXml;
 
 	public static void main(String[] args){
@@ -98,6 +98,7 @@ public class Vvord{
 		if(branch1RevisionHistoryXml != null && branch2RevisionHistoryXml != null)
 			baseRevision = findSharedBase(branch1RevisionHistoryXml.toString(), branch2RevisionHistoryXml.toString()); //attempts to find a base within the histories of the branches
 		baseLocation = "";
+		baseSuffix = "";
 		String base;
 		if(baseRevision == null){ //no shared base found
 			//make a dialog saying no base was found and to select one or try a straight blank one maybe
@@ -110,7 +111,8 @@ public class Vvord{
 		}
 		else{ //shared base found
 			base = branch1; //uses the xml files found in branch1's history
-			baseLocation = baseRevision.location+"/";
+			baseLocation = baseRevision.location+"/"; //problem is lack of ~
+			baseSuffix = "~";
 		}
 		
 		
@@ -142,8 +144,7 @@ public class Vvord{
 		startTime = System.currentTimeMillis();
 		
 		try{
-			System.out.println(base + ", " + baseLocation+"word/document.xml");
-			baseXml = extractXml(base, "base", baseLocation+"word/document.xml");
+			baseXml = extractXml(base, "base", baseLocation+"word/document.xml"+baseSuffix);
 			
 		}
 		catch(IOException e){
