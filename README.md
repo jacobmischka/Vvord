@@ -8,7 +8,7 @@ When running Vvord, the 3dm JAR must also be in the classpath, as well as its de
 
 A compiled JAR, as well as a zip file containing the required libraries can be found on my website at http://www.mischka.info/Vvord/. The JAR is set so that the libs/ directory must be in the same directory as the JAR, not the dependency JARs themselves.
 
-The tool saves several files per merge operation into the machine's temporary directory, so Windows users may want to be aware of that fact. 
+The tool saves several files per merge operation into the machine's temporary directory, so Windows users may want to be aware of that fact. The 3DM merge tool will create a "conflict.log" file in the current directory when a merge is not 100% perfect and successful, which will likely be upon every single merge. In most cases, the merge is successful even when it leaves a conflict log. The log file is overwritten upon each merge.
 
 The tool intended for use via the molhado-word Word plugin to merge .docx files and their histories.
 
