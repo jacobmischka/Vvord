@@ -402,7 +402,7 @@ public class Vvord{
 					
 				entry = new ZipEntry(entryName);
 				
-				if(!entry.getName().equals("history/revision-history.xml")){
+				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 				
 					
 					//zos.setMethod(oldEntry.getMethod());
@@ -479,12 +479,14 @@ public class Vvord{
 				if(entry.getName().contains("[") || entry.getName().contains("]")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 				}
-				try{
-					zos.putNextEntry(entry);
-					writeEntry(entry, is, zos);
-				}
-				catch(ZipException e){
-					e.printStackTrace();
+				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
+					try{
+						zos.putNextEntry(entry);
+						writeEntry(entry, is, zos);
+					}
+					catch(ZipException e){
+						e.printStackTrace();
+					}
 				}
 			}
 			
@@ -498,12 +500,14 @@ public class Vvord{
 				if(entry.getName().contains("[") || entry.getName().contains("]")){
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 				}
-				try{
-					zos.putNextEntry(entry);
-					writeEntry(entry, is, zos);
-				}
-				catch(ZipException e){
-					e.printStackTrace();
+				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
+					try{
+						zos.putNextEntry(entry);
+						writeEntry(entry, is, zos);
+					}
+					catch(ZipException e){
+						e.printStackTrace();
+					}
 				}
 			}
 			
