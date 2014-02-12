@@ -457,7 +457,7 @@ public class Vvord{
 						zos.putNextEntry(entry);
 						writeEntry(entry, is, zos);
 						
-						is = docxFile.getInputStream(originalEntry);
+						is = docxFile.getInputStream(oldEntry);
 						entry = new ZipEntry("history/"+currentId+"/"+originalEntry.getName()+"~");
 						if(entry.getName().contains("[")){
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
