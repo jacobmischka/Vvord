@@ -387,6 +387,8 @@ public class Vvord{
 			contentTypes = new RevisionMetadata();
 			ZipEntry entry;
 			ZipEntry oldEntry;
+			int method = ZipEntry.DEFLATED;
+			byte[] extra = null;
 			
 			
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile));
@@ -404,12 +406,16 @@ public class Vvord{
 				
 				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 				
-					
-					//zos.setMethod(oldEntry.getMethod());
+					if(oldEntry.getMethod() != -1)
+						method = oldEntry.getMethod();
+					if(oldEntry.getExtra() != null)
+						extra = oldEntry.getExtra();
 					
 					if(entry.getName().equals("word/document.xml")){ 
 						zos.putNextEntry(new ZipEntry(entry.getName()));
 						is = new FileInputStream(documentXml); 
+						entry.setMethod(method);
+						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					
@@ -417,6 +423,8 @@ public class Vvord{
 						try{ //check to see if already exists in history
 							zos.putNextEntry(entry);
 							is = docxFile.getInputStream(oldEntry);
+							entry.setMethod(method);
+							entry.setExtra(extra);
 							writeEntry(entry, is, zos);
 						}
 						catch(ZipException e){
@@ -434,6 +442,8 @@ public class Vvord{
 						rels.writeRels(relsFile.toString());
 						is = new FileInputStream(relsFile);
 						zos.putNextEntry(entry);
+						entry.setMethod(method);
+						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					else if(entry.getName().equals("[Content_Types].xml") || entry.getName().equals("%5BContent_Types%5D.xml")){
@@ -442,6 +452,8 @@ public class Vvord{
 					else{ //writes non-history and non-special files to the new docx
 						zos.putNextEntry(entry);
 						is = docxFile.getInputStream(oldEntry);
+						entry.setMethod(method);
+						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 
@@ -455,6 +467,8 @@ public class Vvord{
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 						}
 						zos.putNextEntry(entry);
+						entry.setMethod(method);
+						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 						
 						is = docxFile.getInputStream(oldEntry);
@@ -463,6 +477,8 @@ public class Vvord{
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 						}
 						zos.putNextEntry(entry);
+						entry.setMethod(method);
+						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					
@@ -472,7 +488,10 @@ public class Vvord{
 			while(branch1enu.hasMoreElements()){
 				oldEntry = (ZipEntry)branch1enu.nextElement();
 				entry = new ZipEntry(oldEntry.getName());
-				//zos.setMethod(oldEntry.getMethod());
+				if(oldEntry.getMethod() != -1)
+					method = oldEntry.getMethod();
+				if(oldEntry.getExtra() != null)
+					extra = oldEntry.getExtra();
 				is = branch1Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history"))
 					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
@@ -482,6 +501,8 @@ public class Vvord{
 				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 					try{
 						zos.putNextEntry(entry);
+						entry.setMethod(method);
+						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					catch(ZipException e){
@@ -493,7 +514,11 @@ public class Vvord{
 			while(branch2enu.hasMoreElements()){
 				oldEntry = (ZipEntry)branch2enu.nextElement();
 				entry = new ZipEntry(oldEntry.getName());
-				//zos.setMethod(oldEntry.getMethod());
+				if(oldEntry.getMethod() != -1)
+					method = oldEntry.getMethod();
+				if(oldEntry.getExtra() != null)
+					extra = oldEntry.getExtra();
+				
 				is = branch2Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history"))
 					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName()+"~");
@@ -503,6 +528,8 @@ public class Vvord{
 				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 					try{
 						zos.putNextEntry(entry);
+						entry.setMethod(method);
+						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					catch(ZipException e){
@@ -511,9 +538,11 @@ public class Vvord{
 				}
 			}
 			
-			entry = new ZipEntry("history/revision-history.xml");
+			entry = new ZipEntry("history/revision-history.xml"); //extra and method
 			is = new FileInputStream(revisionHistoryXml);
 			zos.putNextEntry(entry);
+			entry.setMethod(method);
+			entry.setExtra(extra);
 			writeEntry(entry, is, zos);
 			
 			entry = new ZipEntry("history/_rels/revision-history.xml.rels");
@@ -521,6 +550,8 @@ public class Vvord{
 			File revisionHistoryXmlRels = File.createTempFile("revision-history-xml", ".rels");
 			contentTypes.writeRels(revisionHistoryXmlRels.toString());
 			is = new FileInputStream(revisionHistoryXmlRels);
+			entry.setMethod(method);
+			entry.setExtra(extra);
 			writeEntry(entry, is, zos);
 			
 			entry = new ZipEntry("[Content_Types].xml");
@@ -528,6 +559,8 @@ public class Vvord{
 			File contentTypesFile = File.createTempFile("content_types", ".xml");
 			contentTypes.writeContentTypes(contentTypesFile.toString());
 			is = new FileInputStream(contentTypesFile);
+			entry.setMethod(method);
+			entry.setExtra(extra);
 			writeEntry(entry, is, zos);
 			
 			zos.close();
