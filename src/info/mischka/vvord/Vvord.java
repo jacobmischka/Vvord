@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.lang.ClassNotFoundException;
 
 public class Vvord{
-	//TODO: try to get working on osx, test a lot using molhado tool, get actually working in Word
-	// extractHistory from branch files if needed or else get rid of that method
+	//TODO: try to get working on osx, test a lot using molhado tool, add exit codes for specific errors
+	// allow passing a filepath so only one branch needs to be selected
 	
 	static JFrame frame;
 	static FileDialog browser;
@@ -363,12 +363,8 @@ public class Vvord{
 		System.out.println(entry);
 		if(!entry.getName().equals("[Content_Types].xml"))
 			contentTypes.addOverride("/"+entry.getName());
-		if(entry.getName().startsWith("history")){
-			String relationshipId = UUID.randomUUID().toString();
-			while(relationshipId.matches("\\d.+"))
-				relationshipId = UUID.randomUUID().toString();
-			contentTypes.addRelationship(relationshipId, entry.getName().substring(entry.getName().indexOf("/")+1));
-		}
+		if(entry.getName().startsWith("history"))
+			contentTypes.addRelationship("r"+UUID.randomUUID().toString();, entry.getName().substring(entry.getName().indexOf("/")+1));
 						
 		while((length = is.read(buffer)) >= 0){
 			zos.write(buffer, 0, length);
