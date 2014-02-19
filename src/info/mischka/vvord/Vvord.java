@@ -26,8 +26,7 @@ import java.util.ArrayList;
 import java.lang.ClassNotFoundException;
 
 public class Vvord{
-	//TODO: try to get working on osx, test a lot using molhado tool, add exit codes for specific errors
-	// allow passing a filepath so only one branch needs to be selected
+	//TODO: try to get working on osx, test a lot using molhado tool
 	
 	static JFrame frame;
 	static FileDialog browser;
@@ -212,7 +211,7 @@ public class Vvord{
 	}
 	
 	static File extractXml(String name, String outputName, String entryName) throws IOException{
-		//extracts an XML file "entryName" in the docx file "name" and writes it to XML file "outputName" in current directory as of now
+		//extracts an XML file entryName in the docx file name and writes it to XML file outputName
 		
 			ZipFile docx = new ZipFile(name);
 			ZipEntry document = docx.getEntry(entryName);
@@ -272,7 +271,6 @@ public class Vvord{
 			RevisionHistory baseRevisionHistory = new RevisionHistory();
 			baseRevisionHistory.readXML(base.toString());
 			baseId = baseRevisionHistory.current;
-			//baseRevisionHistory.writeXML("testBaseRevisionHistory.xml");
 			
 			for(int i = 0; i < baseRevisionHistory.revisions.size(); i++){
 				if(!revisionHistory.revisions.contains(baseRevisionHistory.revisions.get(i))){
@@ -399,7 +397,7 @@ public class Vvord{
 			
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile));
 			
-			while(enu.hasMoreElements()){ //need to account for baseLocatoin and baseSuffix in all of this
+			while(enu.hasMoreElements()){ 
 				
 				oldEntry = (ZipEntry)enu.nextElement();
 				String entryName = oldEntry.getName();
@@ -465,23 +463,21 @@ public class Vvord{
 
 					
 					
-					if(!entry.getName().startsWith("history")){ //writes non-history and non-special files to the new docx again, but as a history file of the original base document
+					if(!entry.getName().startsWith("history")){ //writes non-history and non-special files to the new docx again, but as a history file of the original base document and the new current document
 						ZipEntry originalEntry = entry;
 						is = docxFile.getInputStream(oldEntry);
-						entry = new ZipEntry("history/"+baseId+"/"+entry.getName()+"~");
-						if(entry.getName().contains("[")){
+						entry = new ZipEntry("history/"+baseId+"/"+entry.getName()+"~"); //add ~ to the end of history files so Word doesn't freak out
+						if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
-						}
 						zos.putNextEntry(entry);
 						entry.setMethod(method);
 						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 						
 						is = docxFile.getInputStream(oldEntry);
-						entry = new ZipEntry("history/"+currentId+"/"+originalEntry.getName()+"~");
-						if(entry.getName().contains("[")){
+						entry = new ZipEntry("history/"+currentId+"/"+originalEntry.getName()+"~"); //add ~ to the end of history files so Word doesn't freak out
+						if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
-						}
 						zos.putNextEntry(entry);
 						entry.setMethod(method);
 						entry.setExtra(extra);
@@ -499,11 +495,10 @@ public class Vvord{
 				if(oldEntry.getExtra() != null)
 					extra = oldEntry.getExtra();
 				is = branch1Docx.getInputStream(entry);
-				if(!entry.getName().startsWith("history"))
+				if(!entry.getName().startsWith("history")) //add ~ to the end of history files so Word doesn't freak out
 					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
-				if(entry.getName().contains("[") || entry.getName().contains("]")){
+				if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
 					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
-				}
 				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 					try{
 						zos.putNextEntry(entry);
@@ -526,11 +521,10 @@ public class Vvord{
 					extra = oldEntry.getExtra();
 				
 				is = branch2Docx.getInputStream(entry);
-				if(!entry.getName().startsWith("history"))
+				if(!entry.getName().startsWith("history")) //add ~ to the end of history files so Word doesn't freak out
 					entry = new ZipEntry("history/"+branch2Id+"/"+entry.getName()+"~");
-				if(entry.getName().contains("[") || entry.getName().contains("]")){
-					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
-				}
+				if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
+					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D")); 
 				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 					try{
 						zos.putNextEntry(entry);
