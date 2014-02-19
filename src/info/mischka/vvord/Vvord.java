@@ -37,6 +37,12 @@ public class Vvord{
 	static String authorName;
 	static String baseLocation, baseSuffix;
 	static File baseRevisionHistoryXml, branch1RevisionHistoryXml, branch2RevisionHistoryXml, baseXml, branch1Xml, branch2Xml, documentXml, revisionHistoryXml;
+	// EXIT CODES
+	final static int EXIT_SUCCESS = 0;
+	final static int EXIT_GENERALERROR = 1;
+	final static int EXIT_MISSINGREQUIREDINPUT = 2;
+	final static int EXIT_IOFILESYSTEMERROR = 3;
+	final static int EXIT_XMLERROR = 4;
 
 	public static void main(String[] args){
 		try{
@@ -47,15 +53,18 @@ public class Vvord{
 		}
 		frame = new JFrame();		
 
-		String branch1 = getDocx("branch1"); //get branch1
+		if(args.length > 1 && new File(args[1]).isFile())
+			String branch1 = args[1]; //looks for branch1 as second argument if it exists
+		else
+			String branch1 = getDocx("branch1"); //get branch1
 		if(branch1 == null){
 			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
-			System.exit(1);
+			System.exit(EXIT_MISSINGREQUIREDINPUT);
 		}
 		String branch2 = getDocx("branch2"); //get branch2
 		if(branch2 == null){
 			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
-			System.exit(1);
+			System.exit(EXIT_MISSINGREQUIREDINPUT);
 		}
 		
 		try{ //extract branch1 files
@@ -64,9 +73,9 @@ public class Vvord{
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + branch1);
 			e.printStackTrace();
-			System.exit(1);		
+			System.exit(EXIT_IOFILESYSTEMERROR);
 		}
-		try{
+		try{ //extract branch1 revision history
 			branch1RevisionHistoryXml = extractXml(branch1, "branch1RevisionHistory", "history/revision-history.xml");
 		}
 		catch(IOException e){
@@ -82,9 +91,9 @@ public class Vvord{
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + branch2);
 			e.printStackTrace();
-			System.exit(1);		
+			System.exit(EXIT_IOFILESYSTEMERROR);		
 		}
-		try{
+		try{ //extract branch2 revision history
 			branch2RevisionHistoryXml = extractXml(branch2, "branch2RevisionHistory", "history/revision-history.xml");
 		}
 		catch(IOException e){
@@ -101,17 +110,16 @@ public class Vvord{
 		baseSuffix = "";
 		String base;
 		if(baseRevision == null){ //no shared base found
-			//make a dialog saying no base was found and to select one or try a straight blank one maybe
 			JOptionPane.showMessageDialog(null, "No common base revision found, please select one", "No base found", JOptionPane.WARNING_MESSAGE);
 			base = getDocx("base");
 			if(base == null){
 				JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
-				System.exit(1);
+				System.exit(EXIT_MISSINGREQUIREDINPUT);
 			}	
 		}
 		else{ //shared base found
 			base = branch1; //uses the xml files found in branch1's history
-			baseLocation = baseRevision.location.substring(1)+"/"; //problem is lack of ~
+			baseLocation = baseRevision.location.substring(1)+"/"; 
 			baseSuffix = "~";
 		}
 		
@@ -120,7 +128,7 @@ public class Vvord{
 		String outputName = JOptionPane.showInputDialog("Enter the filename for the merged document"); //get input for merged document's filename
 		if(outputName.trim().equals("") || outputName == null){
 			JOptionPane.showMessageDialog(null, "Please enter a filename for the merged document.", "Error", JOptionPane.ERROR_MESSAGE);
-			System.exit(1);
+			System.exit(EXIT_MISSINGREQUIREDINPUT);
 		}
 		if(!outputName.endsWith(".docx"))
 			outputName += ".docx";
@@ -134,8 +142,8 @@ public class Vvord{
 			authorName = "Author Name";
 			
 		String comments = "";
-		if(args.length > 1) //uses second argument as comments if specified
-			comments = args[1];
+		if(args.length > 2) //uses third argument as comments if specified
+			comments = args[2];
 		else
 			comments = JOptionPane.showInputDialog("Would you like to enter a comment for this merge?"); //if no arguments found, prompts user for comments
 		
@@ -144,14 +152,12 @@ public class Vvord{
 		startTime = System.currentTimeMillis();
 		
 		try{
-			System.out.println(base + ", " + baseLocation+"word/document.xml"+baseSuffix);
 			baseXml = extractXml(base, "base", baseLocation+"word/document.xml"+baseSuffix);
-			
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + base);
 			e.printStackTrace();
-			System.exit(1);
+			System.exit(EXIT_IOFILESYSTEMERROR);
 		}
 		try{
 			baseRevisionHistoryXml = extractXml(base, "baseRevisionHistory", baseLocation+"history/revision-history.xml");
@@ -168,7 +174,7 @@ public class Vvord{
 		}
 		catch(IOException e){
 			e.printStackTrace();
-			System.exit(1);
+			System.exit(EXIT_IOFILESYSTEMERROR);
 		}
 		
 		String[] arguments = {"-m", baseXml.toString(), branch1Xml.toString(), branch2Xml.toString(), documentXml.toString()}; 
@@ -179,7 +185,7 @@ public class Vvord{
 		}
 		catch(IOException e){
 			e.printStackTrace();
-			System.exit(1);
+			System.exit(EXIT_IOFILESYSTEMERROR);
 		}
 		
 		updateRevisionHistory(revisionHistoryXml, baseRevisionHistoryXml, branch1RevisionHistoryXml, branch2RevisionHistoryXml, comments);
@@ -187,7 +193,7 @@ public class Vvord{
 		endTime = System.currentTimeMillis();
 		System.out.println("Completion time: " + ((endTime-startTime)/1000.0) + " seconds.");
 		
-		System.exit(0);
+		System.exit(EXIT_SUCCESS); //success!
 	}
 	
 	static String getDocx(String type){
@@ -567,15 +573,15 @@ public class Vvord{
 		}
 		catch(FileNotFoundException e){
 			e.printStackTrace();
-			System.exit(1);
+			System.exit(EXIT_IOFILESYSTEMERROR);
 		}
 		catch(IOException e){
 			e.printStackTrace();
-			System.exit(1);
+			System.exit(EXIT_IOFILESYSTEMERROR);
 		}
 		catch(XMLStreamException e){
 			e.printStackTrace();
-			System.exit(1);
+			System.exit(EXIT_XMLERROR);
 		}
 				
 	}
