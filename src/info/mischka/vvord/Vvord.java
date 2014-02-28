@@ -51,11 +51,13 @@ public class Vvord{
 			System.err.println("System look and feel not found or identified.");
 		}
 		frame = new JFrame();		
-
+		
+		String branch1;
+		
 		if(args.length > 1 && new File(args[1]).isFile())
-			String branch1 = args[1]; //looks for branch1 as second argument if it exists
+			branch1 = args[1]; //looks for branch1 as second argument if it exists
 		else
-			String branch1 = getDocx("branch1"); //get branch1
+			branch1 = getDocx("branch1"); //get branch1
 		if(branch1 == null){
 			JOptionPane.showMessageDialog(null, "Please select a docx file", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(EXIT_MISSINGREQUIREDINPUT);
@@ -120,6 +122,7 @@ public class Vvord{
 			base = branch1; //uses the xml files found in branch1's history
 			baseLocation = baseRevision.location.substring(1)+"/"; 
 			baseSuffix = "~";
+			baseRevisionHistoryXml = branch1RevisionHistoryXml;
 		}
 		
 		
@@ -159,7 +162,8 @@ public class Vvord{
 			System.exit(EXIT_IOFILESYSTEMERROR);
 		}
 		try{
-			baseRevisionHistoryXml = extractXml(base, "baseRevisionHistory", baseLocation+"history/revision-history.xml");
+			if(baseRevisionHistoryXml == null)
+				baseRevisionHistoryXml = extractXml(base, "baseRevisionHistory", baseLocation+"history/revision-history.xml");
 		}
 		catch(IOException e){
 			System.out.println("No revision-history.xml found in file " + base);
@@ -368,7 +372,7 @@ public class Vvord{
 		if(!entry.getName().equals("[Content_Types].xml"))
 			contentTypes.addOverride("/"+entry.getName());
 		if(entry.getName().startsWith("history"))
-			contentTypes.addRelationship("r"+UUID.randomUUID().toString();, entry.getName().substring(entry.getName().indexOf("/")+1));
+			contentTypes.addRelationship("r"+UUID.randomUUID().toString(), entry.getName().substring(entry.getName().indexOf("/")+1));
 						
 		while((length = is.read(buffer)) >= 0){
 			zos.write(buffer, 0, length);
@@ -410,16 +414,10 @@ public class Vvord{
 				
 				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 				
-					if(oldEntry.getMethod() != -1)
-						method = oldEntry.getMethod();
-					if(oldEntry.getExtra() != null)
-						extra = oldEntry.getExtra();
 					
 					if(entry.getName().equals("word/document.xml")){ 
 						zos.putNextEntry(new ZipEntry(entry.getName()));
 						is = new FileInputStream(documentXml); 
-						entry.setMethod(method);
-						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					
@@ -427,8 +425,6 @@ public class Vvord{
 						try{ //check to see if already exists in history
 							zos.putNextEntry(entry);
 							is = docxFile.getInputStream(oldEntry);
-							entry.setMethod(method);
-							entry.setExtra(extra);
 							writeEntry(entry, is, zos);
 						}
 						catch(ZipException e){
@@ -446,8 +442,6 @@ public class Vvord{
 						rels.writeRels(relsFile.toString());
 						is = new FileInputStream(relsFile);
 						zos.putNextEntry(entry);
-						entry.setMethod(method);
-						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					else if(entry.getName().equals("[Content_Types].xml") || entry.getName().equals("%5BContent_Types%5D.xml")){
@@ -456,8 +450,6 @@ public class Vvord{
 					else{ //writes non-history and non-special files to the new docx
 						zos.putNextEntry(entry);
 						is = docxFile.getInputStream(oldEntry);
-						entry.setMethod(method);
-						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 
@@ -470,8 +462,6 @@ public class Vvord{
 						if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 						zos.putNextEntry(entry);
-						entry.setMethod(method);
-						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 						
 						is = docxFile.getInputStream(oldEntry);
@@ -479,35 +469,32 @@ public class Vvord{
 						if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
 							entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
 						zos.putNextEntry(entry);
-						entry.setMethod(method);
-						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					
 				}
 			}
-
-			while(branch1enu.hasMoreElements()){
-				oldEntry = (ZipEntry)branch1enu.nextElement();
-				entry = new ZipEntry(oldEntry.getName());
-				if(oldEntry.getMethod() != -1)
-					method = oldEntry.getMethod();
-				if(oldEntry.getExtra() != null)
-					extra = oldEntry.getExtra();
-				is = branch1Docx.getInputStream(entry);
-				if(!entry.getName().startsWith("history")) //add ~ to the end of history files so Word doesn't freak out
-					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
-				if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
-					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
-				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
-					try{
-						zos.putNextEntry(entry);
-						entry.setMethod(method);
-						entry.setExtra(extra);
-						writeEntry(entry, is, zos);
-					}
-					catch(ZipException e){
-						e.printStackTrace();
+			if(!base.equals(branch1)){
+				while(branch1enu.hasMoreElements()){
+					oldEntry = (ZipEntry)branch1enu.nextElement();
+					entry = new ZipEntry(oldEntry.getName());
+					if(oldEntry.getMethod() != -1)
+						method = oldEntry.getMethod();
+					if(oldEntry.getExtra() != null)
+						extra = oldEntry.getExtra();
+					is = branch1Docx.getInputStream(entry);
+					if(!entry.getName().startsWith("history")) //add ~ to the end of history files so Word doesn't freak out
+						entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
+					if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
+						entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
+					if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
+						try{
+							zos.putNextEntry(entry);
+							writeEntry(entry, is, zos);
+						}
+						catch(ZipException e){
+							e.printStackTrace();
+						}
 					}
 				}
 			}
@@ -528,21 +515,17 @@ public class Vvord{
 				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 					try{
 						zos.putNextEntry(entry);
-						entry.setMethod(method);
-						entry.setExtra(extra);
 						writeEntry(entry, is, zos);
 					}
 					catch(ZipException e){
-						e.printStackTrace();
+						//e.printStackTrace();
 					}
 				}
 			}
-			
+			zos.closeEntry();
 			entry = new ZipEntry("history/revision-history.xml"); //extra and method
 			is = new FileInputStream(revisionHistoryXml);
 			zos.putNextEntry(entry);
-			entry.setMethod(method);
-			entry.setExtra(extra);
 			writeEntry(entry, is, zos);
 			
 			entry = new ZipEntry("history/_rels/revision-history.xml.rels");
@@ -550,8 +533,6 @@ public class Vvord{
 			File revisionHistoryXmlRels = File.createTempFile("revision-history-xml", ".rels");
 			contentTypes.writeRels(revisionHistoryXmlRels.toString());
 			is = new FileInputStream(revisionHistoryXmlRels);
-			entry.setMethod(method);
-			entry.setExtra(extra);
 			writeEntry(entry, is, zos);
 			
 			entry = new ZipEntry("[Content_Types].xml");
@@ -559,8 +540,6 @@ public class Vvord{
 			File contentTypesFile = File.createTempFile("content_types", ".xml");
 			contentTypes.writeContentTypes(contentTypesFile.toString());
 			is = new FileInputStream(contentTypesFile);
-			entry.setMethod(method);
-			entry.setExtra(extra);
 			writeEntry(entry, is, zos);
 			
 			zos.close();
