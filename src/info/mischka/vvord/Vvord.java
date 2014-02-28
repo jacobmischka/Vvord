@@ -395,8 +395,6 @@ public class Vvord{
 			contentTypes = new RevisionMetadata();
 			ZipEntry entry;
 			ZipEntry oldEntry;
-			int method = ZipEntry.DEFLATED;
-			byte[] extra = null;
 			
 			
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile));
@@ -478,10 +476,6 @@ public class Vvord{
 				while(branch1enu.hasMoreElements()){
 					oldEntry = (ZipEntry)branch1enu.nextElement();
 					entry = new ZipEntry(oldEntry.getName());
-					if(oldEntry.getMethod() != -1)
-						method = oldEntry.getMethod();
-					if(oldEntry.getExtra() != null)
-						extra = oldEntry.getExtra();
 					is = branch1Docx.getInputStream(entry);
 					if(!entry.getName().startsWith("history")) //add ~ to the end of history files so Word doesn't freak out
 						entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
@@ -502,10 +496,6 @@ public class Vvord{
 			while(branch2enu.hasMoreElements()){
 				oldEntry = (ZipEntry)branch2enu.nextElement();
 				entry = new ZipEntry(oldEntry.getName());
-				if(oldEntry.getMethod() != -1)
-					method = oldEntry.getMethod();
-				if(oldEntry.getExtra() != null)
-					extra = oldEntry.getExtra();
 				
 				is = branch2Docx.getInputStream(entry);
 				if(!entry.getName().startsWith("history")) //add ~ to the end of history files so Word doesn't freak out
