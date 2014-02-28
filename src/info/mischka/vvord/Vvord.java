@@ -472,23 +472,22 @@ public class Vvord{
 					
 				}
 			}
-			if(!base.equals(branch1)){
-				while(branch1enu.hasMoreElements()){
-					oldEntry = (ZipEntry)branch1enu.nextElement();
-					entry = new ZipEntry(oldEntry.getName());
-					is = branch1Docx.getInputStream(entry);
-					if(!entry.getName().startsWith("history")) //add ~ to the end of history files so Word doesn't freak out
-						entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
-					if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
-						entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
-					if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
-						try{
-							zos.putNextEntry(entry);
-							writeEntry(entry, is, zos);
-						}
-						catch(ZipException e){
-							e.printStackTrace();
-						}
+			
+			while(branch1enu.hasMoreElements()){
+				oldEntry = (ZipEntry)branch1enu.nextElement();
+				entry = new ZipEntry(oldEntry.getName());
+				is = branch1Docx.getInputStream(entry);
+				if(!entry.getName().startsWith("history")) //add ~ to the end of history files so Word doesn't freak out
+					entry = new ZipEntry("history/"+branch1Id+"/"+entry.getName()+"~");
+				if(entry.getName().contains("[") || entry.getName().contains("]")) //replace braces with ascii codes
+					entry = new ZipEntry(entry.getName().replace("[", "%5B").replace("]", "%5D"));
+				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
+					try{
+						zos.putNextEntry(entry);
+						writeEntry(entry, is, zos);
+					}
+					catch(ZipException e){
+						e.printStackTrace();
 					}
 				}
 			}
