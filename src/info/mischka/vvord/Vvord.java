@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.lang.ClassNotFoundException;
 
 public class Vvord{
-	//TODO: try to get working on osx, test a lot using molhado tool
+	//TODO: test a lot using molhado tool, documentation
 	
 	static JFrame frame;
 	static FileDialog browser;
