@@ -507,7 +507,7 @@ public class Vvord{
 						writeEntry(entry, is, zos);
 					}
 					catch(ZipException e){
-						//e.printStackTrace();
+						e.printStackTrace();
 					}
 				}
 			}
