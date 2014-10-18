@@ -35,7 +35,7 @@ public class Vvord{
 	static RevisionMetadata contentTypes;
 	static String authorName;
 	static String baseLocation, baseSuffix;
-	static File baseRevisionHistoryXml, branch1RevisionHistoryXml, branch2RevisionHistoryXml, baseXml, branch1Xml, branch2Xml, documentXml, revisionHistoryXml, branch1Styles, branch2Styles, stylesXml;
+	static File baseRevisionHistoryXml, branch1RevisionHistoryXml, branch2RevisionHistoryXml, baseXml, branch1Xml, branch2Xml, documentXml, revisionHistoryXml;
 	// EXIT CODES
 	final static int EXIT_SUCCESS = 0;
 	final static int EXIT_GENERALERROR = 1;
@@ -70,7 +70,6 @@ public class Vvord{
 		
 		try{ //extract branch1 files
 			branch1Xml = extractXml(branch1, "branch1", "word/document.xml");
-			branch1Styles = extractXml(branch1, "branch1Styles", "word/styles.xml");
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + branch1);
@@ -89,7 +88,6 @@ public class Vvord{
 			
 		try{ //extract branch2 files
 			branch2Xml = extractXml(branch2, "branch2", "word/document.xml");
-			branch2Styles = extractXml(branch2, "branch2Styles", "word/styles.xml");
 		}
 		catch(IOException e){
 			System.err.println("Error reading document.xml in file " + branch2);
@@ -193,26 +191,7 @@ public class Vvord{
 			System.exit(EXIT_IOFILESYSTEMERROR);
 		}
 		
-		try{
-			stylesXml = File.createTempFile("styles", ".xml");
-		}
-		catch(IOException e){
-			e.printStackTrace();
-			System.exit(EXIT_IOFILESYSTEMERROR);
-		}
-		
 		updateRevisionHistory(revisionHistoryXml, baseRevisionHistoryXml, branch1RevisionHistoryXml, branch2RevisionHistoryXml, comments);
-		try{
-			Styles.mergeStyles(branch1Styles, branch2Styles, stylesXml);
-		}
-		catch(XMLStreamException e){
-			e.printStackTrace();
-			System.exit(EXIT_XMLERROR);
-		}
-		catch(FileNotFoundException e){
-			e.printStackTrace();
-			System.exit(EXIT_IOFILESYSTEMERROR);
-		}
 		createDocx(base, branch1, branch2, outputName);
 		endTime = System.currentTimeMillis();
 		System.out.println("Completion time: " + ((endTime-startTime)/1000.0) + " seconds.");
@@ -431,7 +410,7 @@ public class Vvord{
 					
 				entry = new ZipEntry(entryName);
 				
-				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml") && !entry.getName().equals("word/styles.xml")){
+				if(!entry.getName().equals("history/revision-history.xml") && !entry.getName().equals("history/_rels/revision-history.xml.rels") && !entry.getName().equals("[Content_Types].xml")){
 				
 					
 					if(entry.getName().equals("word/document.xml")){ 
@@ -535,11 +514,6 @@ public class Vvord{
 			zos.closeEntry();
 			entry = new ZipEntry("history/revision-history.xml"); //extra and method
 			is = new FileInputStream(revisionHistoryXml);
-			zos.putNextEntry(entry);
-			writeEntry(entry, is, zos);
-			
-			entry = new ZipEntry("word/styles.xml");
-			is = new FileInputStream(stylesXml);
 			zos.putNextEntry(entry);
 			writeEntry(entry, is, zos);
 			
